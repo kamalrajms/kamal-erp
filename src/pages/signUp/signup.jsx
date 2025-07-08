@@ -37,7 +37,7 @@ export default function signup() {
 
     try {
       const response = await fetch(
-        "https://saikumar99.pythonanywhere.com/register/",
+        "https://saikumar99.pythonanywhere.com/api/register/",
         {
           method: "POST",
           headers: {
