@@ -10,8 +10,6 @@ export default function signup() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  // controlling inputs
-
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [userMail, setUserMail] = useState("");
@@ -26,20 +24,53 @@ export default function signup() {
 
   const [showPassword, setShowPassword] = useState(false);
 
-  function handleSignIn() {
-    const userData = {
-      user: {
-        id: 1,
-        name: "John Doe",
-        email: "john@example.com",
-        profilePic: "https://m.media-amazon.com/images/I/51T6MpbpQLL.jpg",
-        jobRole: "Project manager",
-        mobile: "98897887676",
-      },
+  async function handleSignIn(e) {
+    e.preventDefault();
+
+    const signupData = {
+      name: name,
+      email: userMail,
+      mobile: phone,
+      password: password,
+      role: role,
     };
-    dispatch(login(userData));
-    toast.success("Signed up successfully!");
-    navigate("/");
+
+    try {
+      const response = await fetch(
+        "https://saikumar99.pythonanywhere.com/register/",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(signupData),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        alert("Signup failed: " + (data.message || "Unknown error"));
+        return;
+      }
+
+      const userData = {
+        user: {
+          id: data.id || 1,
+          name: data.name || name,
+          email: data.email || userMail,
+          profilePic: "https://m.media-amazon.com/images/I/51T6MpbpQLL.jpg", // placeholder
+          jobRole: data.role || role,
+          mobile: data.mobile || phone,
+        },
+      };
+
+      dispatch(login(userData));
+      alert("Signed up successfully!");
+      navigate("/");
+    } catch (error) {
+      alert("An error occurred: " + error.message);
+    }
   }
 
   return (
@@ -52,7 +83,6 @@ export default function signup() {
         <div className="signup-form">
           <div className="signup-cointained">
             <div className="welcome-signup">Sign Up</div>
-            {/* <p>Sign up to cointinue</p> */}
 
             <div
               className={`username-cointainer-up ${
@@ -144,7 +174,6 @@ export default function signup() {
                   placeholder="Password"
                   required
                   minLength="8"
-                  // pattern="^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$"
                   value={password}
                   onChange={(e) => {
                     setPassword(e.target.value);
@@ -159,7 +188,6 @@ export default function signup() {
                   placeholder="Password"
                   required
                   minLength="8"
-                  // pattern="^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$"
                   value={password}
                   onChange={(e) => {
                     setPassword(e.target.value);
@@ -190,15 +218,6 @@ export default function signup() {
                 </svg>
               )}
             </div>
-            {/* <div className="tearms-cointainer">
-              <input type="checkbox" id="terms" required />
-              <label form="terms" className="agree">
-                I agree with{" "}
-                <a href="#" target="_blank">
-                  Terms & Conditions
-                </a>
-              </label>
-            </div> */}
             <button onClick={handleSignIn} className="login-button-up">
               Sign Up
             </button>
