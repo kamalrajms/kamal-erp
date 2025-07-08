@@ -29,7 +29,7 @@ export default function signin() {
 
     try {
       const response = await fetch(
-        "https://saikumar99.pythonanywhere.com/login/",
+        "https://saikumar99.pythonanywhere.com/api/login/",
         {
           method: "POST",
           headers: {
