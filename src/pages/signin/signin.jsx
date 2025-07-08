@@ -10,6 +10,8 @@ export default function signin() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
+  // controlling inputs
+
   const [userMail, setUserMail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -19,50 +21,20 @@ export default function signin() {
 
   const [showPassword, setShowPassword] = useState(false);
 
-  async function handleSignIn(e) {
-    e.preventDefault();
-
-    const loginData = {
-      email: userMail,
-      password: password,
+  function handleSignIn() {
+    const userData = {
+      user: {
+        id: 1,
+        name: "John Doe",
+        email: "john@example.com",
+        profilePic: "https://m.media-amazon.com/images/I/51T6MpbpQLL.jpg",
+        jobRole: "Project manager",
+        mobile: "988987676",
+      },
     };
-
-    try {
-      const response = await fetch(
-        "https://saikumar99.pythonanywhere.com/api/login/",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(loginData),
-        }
-      );
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        toast.error("Login failed: " + (data.message || "Invalid credentials"));
-        return;
-      }
-
-      const userData = {
-        user: {
-          id: data.id || 1,
-          name: data.name || "User",
-          email: data.email || userMail,
-          profilePic: "https://m.media-amazon.com/images/I/51T6MpbpQLL.jpg",
-          jobRole: data.role || "User",
-          mobile: data.mobile || "0000000000",
-        },
-      };
-
-      dispatch(login(userData));
-      toast.success("Signed in successfully!");
-      navigate("/");
-    } catch (error) {
-      toast.error("Error: " + error.message);
-    }
+    dispatch(login(userData));
+    toast.success("Signed in successfully!");
+    navigate("/");
   }
 
   return (
@@ -102,8 +74,8 @@ export default function signin() {
               {showPassword ? (
                 <input
                   type={"text"}
-                  onFocus={() => setfocusmail(true)}
-                  onBlur={() => setfocusmail(false)}
+                  onFocus={() => setfocuspassword(true)}
+                  onBlur={() => setfocuspassword(false)}
                   className="password"
                   placeholder="Password"
                   required
@@ -116,8 +88,8 @@ export default function signin() {
               ) : (
                 <input
                   type={"password"}
-                  onFocus={() => setfocusmail(true)}
-                  onBlur={() => setfocusmail(false)}
+                  onFocus={() => setfocuspassword(true)}
+                  onBlur={() => setfocuspassword(false)}
                   className="password"
                   placeholder="Password"
                   required
@@ -152,6 +124,15 @@ export default function signin() {
                 </svg>
               )}
             </div>
+            {/* <div className="tearms-cointainer">
+              <input type="checkbox" id="terms" required />
+              <label form="terms" className="agree">
+                I agree with{" "}
+                <a href="#" target="_blank">
+                  Terms & Conditions
+                </a>
+              </label>
+            </div> */}
             <button onClick={handleSignIn} className="login-button">
               Sign In
             </button>
