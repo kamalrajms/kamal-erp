@@ -245,6 +245,69 @@ export default function () {
             )}
           </div>
         </div>
+        <div className="cerateNewStock-btn-container">
+          <button
+            className={
+              stockReceiptStatus === "Submitted" ||
+              stockReceiptStatus === "Cancelled"
+                ? "cerateNewStock-order-active-btn"
+                : "cerateNewStock-inactive-btn"
+            }
+          >
+            {stockReceiptStatus === "Cancelled"
+              ? "Cancelled GRN"
+              : "Cancel GRN"}
+          </button>
+          <nav>
+            <button className="cerateNewStock-cancel-btn">Cancel</button>
+            <button
+              className={
+                stockReceiptStatus === "" || stockReceiptStatus === "Draft"
+                  ? "cerateNewStock-active-btn"
+                  : "cerateNewStock-completed-btn"
+              }
+            >
+              Save Draft
+            </button>
+            <button
+              className={
+                stockReceiptStatus === "" || stockReceiptStatus === "Draft"
+                  ? "cerateNewStock-active-btn"
+                  : "cerateNewStock-completed-btn"
+              }
+            >
+              {stockReceiptStatus === "Submitted" ? "Submitted" : "Submit"}
+            </button>
+            <svg
+              className={
+                stockReceiptStatus !== ""
+                  ? "cerateNewStock-pdf-mail-activelogo"
+                  : "cerateNewStock-pdf-mail-futurelogo"
+              }
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 22 24"
+              fill="none"
+            >
+              <path
+                fillRule="evenodd"
+                clipRule="evenodd"
+                d="M0.600098 2.4C0.600098 1.76348 0.852954 1.15303 1.30304 0.702944C1.75313 0.252856 2.36358 0 3.0001 0L16.1313 0L21.4001 5.2688V21.6C21.4001 22.2365 21.1472 22.847 20.6972 23.2971C20.2471 23.7471 19.6366 24 19.0001 24H3.0001C2.36358 24 1.75313 23.7471 1.30304 23.2971C0.852954 22.847 0.600098 22.2365 0.600098 21.6V2.4ZM4.6001 9.6H2.2001V17.6H3.8001V14.4H4.6001C5.23662 14.4 5.84707 14.1471 6.29715 13.6971C6.74724 13.247 7.0001 12.6365 7.0001 12C7.0001 11.3635 6.74724 10.753 6.29715 10.3029C5.84707 9.85286 5.23662 9.6 4.6001 9.6ZM11.0001 9.6H8.6001V17.6H11.0001C11.6366 17.6 12.2471 17.3471 12.6972 16.8971C13.1472 16.447 13.4001 15.8365 13.4001 15.2V12C13.4001 11.3635 13.1472 10.753 12.6972 10.3029C12.2471 9.85286 11.6366 9.6 11.0001 9.6ZM15.0001 17.6V9.6H19.8001V11.2H16.6001V12.8H18.2001V14.4H16.6001V17.6H15.0001Z"
+              />
+            </svg>
+            <svg
+              className={
+                stockReceiptStatus !== ""
+                  ? "cerateNewStock-pdf-mail-activelogo"
+                  : "cerateNewStock-pdf-mail-futurelogo"
+              }
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 20 16"
+              fill="none"
+            >
+              <path d="M2 16C1.45 16 0.979333 15.8043 0.588 15.413C0.196667 15.0217 0.000666667 14.5507 0 14V2C0 1.45 0.196 0.979333 0.588 0.588C0.98 0.196666 1.45067 0.000666667 2 0H18C18.55 0 19.021 0.196 19.413 0.588C19.805 0.98 20.0007 1.45067 20 2V14C20 14.55 19.8043 15.021 19.413 15.413C19.0217 15.805 18.5507 16.0007 18 16H2ZM10 8.825C10.0833 8.825 10.171 8.81233 10.263 8.787C10.355 8.76167 10.4423 8.72433 10.525 8.675L17.6 4.25C17.7333 4.16667 17.8333 4.06267 17.9 3.938C17.9667 3.81333 18 3.67567 18 3.525C18 3.19167 17.8583 2.94167 17.575 2.775C17.2917 2.60833 17 2.61667 16.7 2.8L10 7L3.3 2.8C3 2.61667 2.70833 2.61267 2.425 2.788C2.14167 2.96333 2 3.209 2 3.525C2 3.69167 2.03333 3.83767 2.1 3.963C2.16667 4.08833 2.26667 4.184 2.4 4.25L9.475 8.675C9.55833 8.725 9.646 8.76267 9.738 8.788C9.83 8.81333 9.91733 8.82567 10 8.825Z" />
+            </svg>
+          </nav>
+        </div>
       </div>
     </>
   );

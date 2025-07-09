@@ -505,3 +505,19 @@
   background: #fff;
   margin-right: 20px;
 }
+/* button container */
+.cerateNewStock-btn-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 18px;
+  padding: 50px 0;
+  flex-wrap: wrap-reverse;
+}
+.cerateNewStock-btn-container > nav {
+  display: flex;
+  justify-content: end;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
+}
