@@ -213,6 +213,18 @@
 }
 
 /* table */
+.cerateNewStock-table-delete-logo {
+  width: 14px;
+  height: 16px;
+  fill: #234e70;
+  margin: auto;
+  cursor: pointer;
+}
+.cerateNewStock-table-delete-logo.disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
+}
 .cerateNewStock-table-container {
   width: 100%;
   overflow-y: hidden;

@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import "./createNewStockReceipt.css";
 import { useNavigate } from "react-router-dom";
+import StockListItem from "./stockListItem";
 import StockComment from "./stockComment";
 import StockHistory from "./stockHistory";
 import StockAttachment from "./stockAttachment";
@@ -8,11 +9,135 @@ import StockAttachment from "./stockAttachment";
 export default function () {
   const prevpg = useNavigate();
   const [stockReceiptStatus, setStockReceiptstatus] = useState("");
+  const [numOfStockList, setNumOfStockList] = useState(1);
+  const [StockListData, setStockListData] = useState([{ unique_key: 0 }]);
+
+  const [ApiStockData, setApiStockData] = useState({});
+  const [stockData, setStockData] = useState([]);
+
   const [detail, setDetail] = useState({
     comment: true,
     history: false,
     attachment: false,
   });
+
+  const stockFromApi = {
+    stockData: [
+      {
+        po_reference_id: "PO-001",
+        supplier_name: "Praveen",
+        stock_table_data: [
+          {
+            product_name: "Key Board",
+            product_id: "KEY-001",
+            umo: "PCS",
+            qty_ordered: "100",
+            qty_received: "100",
+            accepted_qty: "95",
+            rejected_qty: "5",
+            qty_returned: "0",
+            warehouse: ["Rack A1", "Rack A2"],
+          },
+          {
+            product_name: "Mouse",
+            product_id: "MOU-001",
+            umo: "PCS",
+            qty_ordered: "100",
+            qty_received: "100",
+            accepted_qty: "85",
+            rejected_qty: "15",
+            qty_returned: "0",
+            warehouse: ["Rack A1", "Rack A2"],
+          },
+          {
+            product_name: "Mouse",
+            product_id: "MOU-001",
+            umo: "PCS",
+            qty_ordered: "100",
+            qty_received: "100",
+            accepted_qty: "85",
+            rejected_qty: "15",
+            qty_returned: "0",
+            warehouse: ["Rack A1", "Rack A2"],
+          },
+        ],
+      },
+      {
+        po_reference_id: "PO-002",
+        supplier_name: "Naveen",
+        stock_table_data: [
+          {
+            product_name: "Pendrive",
+            product_id: "PEN-001",
+            umo: "PCS",
+            qty_ordered: "100",
+            qty_received: "100",
+            accepted_qty: "95",
+            rejected_qty: "5",
+            qty_returned: "0",
+            warehouse: ["Rack A1", "Rack A2"],
+          },
+          {
+            product_name: "Moniter",
+            product_id: "MON-001",
+            umo: "PCS",
+            qty_ordered: "100",
+            qty_received: "100",
+            accepted_qty: "85",
+            rejected_qty: "15",
+            qty_returned: "0",
+            warehouse: ["Rack A1", "Rack A2"],
+          },
+        ],
+      },
+    ],
+  };
+  const [stockInput, setStockInput] = useState({
+    grn_id: "",
+    po_reference_id: "", // ← Must be empty string, not undefined
+    received_date: "",
+    supplier_name: "", // ← Must be empty string
+    supplier_dn_no: "",
+    supplier_invoice_no: "",
+    received_by: "",
+    qc_done_by: "",
+  });
+  const handleStockInputChange = (e) => {
+    setStockInput((prev) => {
+      return { ...prev, [e.target.id]: e.target.value };
+    });
+  };
+
+  useEffect(() => {
+    setApiStockData(stockFromApi);
+  }, []);
+  useEffect(() => {
+    if (Object.keys(ApiStockData).length > 0) {
+      setStockData(ApiStockData.stockData);
+    }
+  }, [ApiStockData]);
+  useEffect(() => {
+    const selected = stockInput.po_reference_id;
+    if (!selected) {
+      setStockInput((prev) => ({
+        ...prev,
+        supplier_name: "",
+      }));
+      setNumOfStockList(0);
+      return;
+    }
+
+    const po_id = stockData.find((ele) => ele.po_reference_id === selected);
+
+    if (po_id) {
+      setStockInput((prev) => ({
+        ...prev,
+        supplier_name: po_id.supplier_name,
+      }));
+      setNumOfStockList(po_id.stock_table_data.length);
+    }
+  }, [stockInput.po_reference_id]);
+
   return (
     <>
       <div className="cerateNewStock-container">
@@ -75,17 +200,27 @@ export default function () {
             <input
               id="grn_id"
               type="text"
+              value={stockInput.grn_id}
               placeholder="Auto Generate"
               disabled
             />
           </div>
           <div className="cerateNewStock-input-box">
-            <label htmlFor="po_referance_id">
+            <label htmlFor="po_reference_id">
               PO Reference ID<sup>*</sup>
             </label>
-            <select id="po_referance_id" required>
+            <select
+              id="po_reference_id"
+              value={stockInput.po_reference_id}
+              onChange={handleStockInputChange}
+              required
+            >
               <option value="">Select Referance</option>
-              <option value="one">One</option>
+              {stockData.map((ele, ind) => (
+                <option value={ele.po_reference_id} key={ind}>
+                  {ele.po_reference_id}
+                </option>
+              ))}
             </select>
           </div>
         </div>
@@ -94,7 +229,13 @@ export default function () {
             <label htmlFor="received_date">
               Received Date<sup>*</sup>
             </label>
-            <input id="received_date" type="date" required />
+            <input
+              id="received_date"
+              value={stockInput.received_date}
+              onChange={handleStockInputChange}
+              type="date"
+              required
+            />
           </div>
           <div className="cerateNewStock-input-box">
             <label htmlFor="supplier_name">
@@ -102,6 +243,8 @@ export default function () {
             </label>
             <input
               type="text"
+              value={stockInput.supplier_name}
+              onChange={handleStockInputChange}
               id="supplier_name"
               placeholder="Enter Supplier Name"
               required
@@ -113,6 +256,8 @@ export default function () {
             <label htmlFor="supplier_dn_no">Supplier DN No.</label>
             <input
               id="supplier_dn_no"
+              value={stockInput.supplier_dn_no}
+              onChange={handleStockInputChange}
               type="text"
               placeholder="Enter Supplier DN No."
             />
@@ -121,6 +266,8 @@ export default function () {
             <label htmlFor="supplier_invoice_no">Supplier Invoice No.</label>
             <input
               type="text"
+              value={stockInput.supplier_invoice_no}
+              onChange={handleStockInputChange}
               id="supplier_invoice_no"
               placeholder="Enter Supplier Invoice No."
             />
@@ -129,14 +276,22 @@ export default function () {
         <div className="cerateNewStock-input-container">
           <div className="cerateNewStock-input-box">
             <label htmlFor="received_by">Received By</label>
-            <select id="received_by">
+            <select
+              id="received_by"
+              value={stockInput.received_by}
+              onChange={handleStockInputChange}
+            >
               <option value="">Select Referance</option>
               <option value="one">One</option>
             </select>
           </div>
           <div className="cerateNewStock-input-box">
             <label htmlFor="qc_done_by">QC Done By</label>
-            <select id="qc_done_by">
+            <select
+              id="qc_done_by"
+              value={stockInput.qc_done_by}
+              onChange={handleStockInputChange}
+            >
               <option value="">Select Referance</option>
               <option value="one">One</option>
             </select>
@@ -180,7 +335,31 @@ export default function () {
               </tr>
             </thead>
             <tbody className="cerateNewStock-table-body">
-              <tr></tr>
+              {[...Array(numOfStockList)].map((ele, ind) => (
+                <StockListItem
+                  key={ind}
+                  unique_key={ind}
+                  stockInput={stockInput}
+                  //api data
+                  stockData={stockData}
+                />
+              ))}
+              <tr>
+                <td></td>
+                <td>
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setStockListData((prev) => {
+                        return [...prev, { unique_key: numOfStockList }];
+                      });
+                      setNumOfStockList((p) => ++p);
+                    }}
+                  >
+                    + Add Item
+                  </button>
+                </td>
+              </tr>
             </tbody>
           </table>
         </div>
