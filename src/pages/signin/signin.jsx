@@ -7,7 +7,7 @@ import { toast } from "react-toastify";
 import siteLogo from "../../assets/signin/sitelogo.png";
 import axios from "axios";
 
-export default function signin() {
+export default function Signin() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
@@ -31,22 +31,30 @@ export default function signin() {
     setLoading(true);
 
     try {
-      const response = await axios.post(API_URL, {
-        email: userMail,
-        password: password,
-      });
+      const response = await axios.post(
+        API_URL,
+        {
+          email: userMail,
+          password: password,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
-      if (response.data && response.data.user) {
+      if (response.data && response.data.token) {
         const userData = {
           user: {
-            id: response.data.user.id,
-            name: response.data.user.name,
-            email: response.data.user.email,
+            id: response.data.user?.id || Date.now(),
+            name: response.data.user?.name || "User",
+            email: response.data.user?.email || userMail,
             profilePic:
-              response.data.user.profile_pic ||
+              response.data.user?.profile_pic ||
               "https://m.media-amazon.com/images/I/51T6MpbpQLL.jpg",
-            jobRole: response.data.user.job_role || "Project manager",
-            mobile: response.data.user.mobile || "988987676",
+            jobRole: response.data.user?.job_role || "User",
+            mobile: response.data.user?.mobile || "",
             token: response.data.token,
           },
         };
@@ -58,14 +66,24 @@ export default function signin() {
         throw new Error("Invalid response format");
       }
     } catch (error) {
-      let errorMessage = "Login failed";
+      console.error("Login error:", error);
+      let errorMessage = "Login failed. Please try again.";
+
       if (error.response) {
+        // The request was made and the server responded with a status code
         if (error.response.status === 401) {
           errorMessage = "Invalid email or password";
-        } else if (error.response.data && error.response.data.error) {
-          errorMessage = error.response.data.error;
+        } else if (error.response.data) {
+          errorMessage =
+            error.response.data.message ||
+            error.response.data.detail ||
+            JSON.stringify(error.response.data);
         }
+      } else if (error.request) {
+        // The request was made but no response was received
+        errorMessage = "No response from server. Please check your connection.";
       }
+
       toast.error(errorMessage);
     } finally {
       setLoading(false);
