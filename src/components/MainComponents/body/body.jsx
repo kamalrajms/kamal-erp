@@ -32,6 +32,7 @@ import CreateNewPurchase from "../../purchase/create-new-purchaseOrder/createNew
 import EditPurchase from "../../purchase/create-new-purchaseOrder/editPurchase";
 import StockReceipt from "../../purchase/stock-receipt/stockReceipt";
 import CreateNewStockReceipt from "../../purchase/create-new-stockReceipt/createNewStockReceipt";
+import EditStockReceipt from "../../purchase/create-new-stockReceipt/editStockReceipt";
 
 export default function body({
   expanded,
@@ -194,6 +195,8 @@ export default function body({
           <StockReceipt setCurrentPage={setCurrentPage} />
         ) : currentPage == "createNewStockReceipt" ? (
           <CreateNewStockReceipt />
+        ) : currentPage == "editStockReceipt" ? (
+          <EditStockReceipt />
         ) : currentPage == "task" ? (
           <Task />
         ) : currentPage == "attendance" ? (

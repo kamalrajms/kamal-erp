@@ -7,7 +7,7 @@ import StockHistory from "./stockHistory";
 import StockAttachment from "./stockAttachment";
 import { toast } from "react-toastify";
 
-export default function createNewStockReceipt() {
+export default function editNewStockReceipt() {
   const prevpg = useNavigate();
   const [stockReceiptStatus, setStockReceiptstatus] = useState("");
   const [numOfStockList, setNumOfStockList] = useState(1);
@@ -105,9 +105,9 @@ export default function createNewStockReceipt() {
   };
   const [stockInput, setStockInput] = useState({
     grn_id: "",
-    po_reference_id: "",
+    po_reference_id: "", // ← Must be empty string, not undefined
     received_date: "",
-    supplier_name: "",
+    supplier_name: "", // ← Must be empty string
     supplier_dn_no: "",
     supplier_invoice_no: "",
     received_by: "",
