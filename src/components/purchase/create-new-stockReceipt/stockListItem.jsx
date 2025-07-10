@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import "./createNewStockReceipt.css";
-import StockSearchOption from "./stockSearchoption";
+import StockSearchOption from "./stockSearchOption";
 
 export default function StockListItem({
   unique_key,
