@@ -28,6 +28,7 @@ export default function stockSeaarchOption({
         options={options}
         placeholder="Select product"
         isDisabled={BtnAccess}
+        required
       />
     </div>
   );

@@ -2,7 +2,12 @@ import React, { useState, useEffect } from "react";
 import "./createNewStockReceipt.css";
 import StockSearchOption from "./stockSearchoption";
 
-export default function StockListItem({ unique_key, stockData, stockInput }) {
+export default function StockListItem({
+  unique_key,
+  stockData,
+  stockInput,
+  BtnAccess,
+}) {
   const [productData, setProductData] = useState({
     product_name: "",
     product_id: "",
@@ -33,6 +38,7 @@ export default function StockListItem({ unique_key, stockData, stockInput }) {
         accepted_qty: product.accepted_qty || "",
         rejected_qty: product.rejected_qty || "",
         qty_returned: product.qty_returned || "",
+        stock_dim: product.stock_dim,
         warehouse: product.warehouse || [],
         selected_warehouse: "",
       });
@@ -60,11 +66,14 @@ export default function StockListItem({ unique_key, stockData, stockInput }) {
           accepted_qty: selectedProduct.accepted_qty,
           rejected_qty: selectedProduct.rejected_qty,
           qty_returned: selectedProduct.qty_returned,
+          stock_dim: selectedProduct.stock_dim,
           warehouse: selectedProduct.warehouse || [],
+          selected_warehouse: "",
         }));
       }
     }
   };
+  console.log(productData);
 
   return (
     <tr key={unique_key}>
@@ -80,6 +89,7 @@ export default function StockListItem({ unique_key, stockData, stockInput }) {
               )
               ?.stock_table_data.map((p) => p.product_name) || []
           }
+          BtnAccess={BtnAccess}
         />
       </td>
       <td>{productData.product_id}</td>
@@ -101,6 +111,7 @@ export default function StockListItem({ unique_key, stockData, stockInput }) {
             }));
           }}
           required
+          disabled={BtnAccess}
         />
       </td>
       <td>
@@ -119,6 +130,7 @@ export default function StockListItem({ unique_key, stockData, stockInput }) {
             }));
           }}
           required
+          disabled={BtnAccess}
         />
       </td>
       <td>{productData.rejected_qty}</td>
@@ -133,6 +145,8 @@ export default function StockListItem({ unique_key, stockData, stockInput }) {
               return { ...prev, [e.target.id]: e.target.value };
             });
           }}
+          required
+          disabled={BtnAccess}
         >
           <option value="">None</option>
           <option value="Serial">Serial</option>
@@ -149,6 +163,7 @@ export default function StockListItem({ unique_key, stockData, stockInput }) {
             }))
           }
           required
+          disabled={BtnAccess}
         >
           <option value="">None</option>
           {productData.warehouse?.map((ele, ind) => (
@@ -161,7 +176,9 @@ export default function StockListItem({ unique_key, stockData, stockInput }) {
       <td>
         <svg
           //   onClick={() => onDelete(unique_key)}
-          className="cerateNewStock-table-delete-logo"
+          className={`cerateNewStock-table-delete-logo ${
+            BtnAccess ? "disabled" : ""
+          }`}
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 14 16"
         >

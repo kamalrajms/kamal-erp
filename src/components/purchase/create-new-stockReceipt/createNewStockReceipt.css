@@ -533,3 +533,30 @@
   gap: 18px;
   flex-wrap: wrap;
 }
+@media (max-width: 500px) {
+  .cerateNewStock-totals-container > nav {
+    flex-direction: column;
+    justify-content: center;
+    align-items: start;
+    gap: 3px;
+  }
+  .cerateNewStock-totals-container > nav > input {
+    width: 100%;
+  }
+  .cerateNewStock-hub-head {
+    flex-direction: column;
+    align-items: start;
+    justify-content: center;
+  }
+}
+@media (max-width: 600px) {
+  .cerateNewStock-input-container {
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 650px) {
+  .cerateNewStock-btn-container {
+    justify-content: end;
+  }
+}
