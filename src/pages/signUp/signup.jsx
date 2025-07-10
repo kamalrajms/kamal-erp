@@ -5,18 +5,18 @@ import { useDispatch } from "react-redux";
 import { login } from "../../redux/authSlice";
 import { Link } from "react-router-dom";
 import siteLogo from "../../assets/signin/sitelogo.png";
+import { toast } from "react-toastify";
 
-export default function signup() {
+export default function Signup() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-
-  // controlling inputs
 
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [userMail, setUserMail] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const [focusname, setfocusName] = useState(false);
   const [focusphone, setfocusPhone] = useState(false);
@@ -26,27 +26,74 @@ export default function signup() {
 
   const [showPassword, setShowPassword] = useState(false);
 
-  function handleSignIn() {
-    const userData = {
-      user: {
-        id: 1,
-        name: "John Doe",
-        email: "john@example.com",
-        profilePic: "https://m.media-amazon.com/images/I/51T6MpbpQLL.jpg",
-        jobRole: "Project manager",
-        mobile: "98897887676",
-      },
-    };
-    dispatch(login(userData));
-    toast.success("Signed up successfully!!");
-    navigate("/");
+  async function handleSignIn(e) {
+    e.preventDefault();
+    setIsLoading(true);
+
+    try {
+      const response = await fetch(
+        "https://saikumar99.pythonanywhere.com/api/register/",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            name: name,
+            mobile: phone,
+            email: userMail,
+            password: password,
+            job_role: role,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (response.ok) {
+        // Assuming the API returns user data upon successful registration
+        const userData = {
+          user: {
+            id: data.user.id || 1,
+            name: data.user.name || name,
+            email: data.user.email || userMail,
+            profilePic:
+              data.user.profilePic ||
+              "https://m.media-amazon.com/images/I/51T6MpbpQLL.jpg",
+            jobRole: data.user.job_role || role,
+            mobile: data.user.mobile || phone,
+          },
+          token: data.token, // Assuming the API returns a token
+        };
+
+        dispatch(login(userData));
+        toast.success("Signed up successfully!!");
+        navigate("/");
+      } else {
+        // Handle errors from the API
+        if (data.errors) {
+          Object.values(data.errors).forEach((error) => {
+            toast.error(error[0]);
+          });
+        } else if (data.message) {
+          toast.error(data.message);
+        } else {
+          toast.error("Registration failed. Please try again.");
+        }
+      }
+    } catch (error) {
+      toast.error("An error occurred. Please try again.");
+      console.error("Registration error:", error);
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   return (
     <div>
-      <form className="signup-page">
+      <form className="signup-page" onSubmit={handleSignIn}>
         <div className="signup-img">
-          <img src={siteLogo} />
+          <img src={siteLogo} alt="Site Logo" />
           <p>Turn ideas into action-stay organized, stay ahead.</p>
         </div>
         <div className="signup-form">
@@ -144,7 +191,6 @@ export default function signup() {
                   placeholder="Password"
                   required
                   minLength="8"
-                  // pattern="^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$"
                   value={password}
                   onChange={(e) => {
                     setPassword(e.target.value);
@@ -159,7 +205,6 @@ export default function signup() {
                   placeholder="Password"
                   required
                   minLength="8"
-                  // pattern="^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$"
                   value={password}
                   onChange={(e) => {
                     setPassword(e.target.value);
@@ -190,17 +235,12 @@ export default function signup() {
                 </svg>
               )}
             </div>
-            {/* <div className="tearms-cointainer">
-              <input type="checkbox" id="terms" required />
-              <label form="terms" className="agree">
-                I agree with{" "}
-                <a href="#" target="_blank">
-                  Terms & Conditions
-                </a>
-              </label>
-            </div> */}
-            <button onClick={handleSignIn} className="login-button-up">
-              Sign Up
+            <button
+              type="submit"
+              className="login-button-up"
+              disabled={isLoading}
+            >
+              {isLoading ? "Signing Up..." : "Sign Up"}
             </button>
             <p id="changer-link-signup">
               Already Have an Account?{" "}
