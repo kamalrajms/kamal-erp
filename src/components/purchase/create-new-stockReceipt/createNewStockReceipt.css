@@ -537,6 +537,7 @@
 .cerateNewStock-stockDim-blue {
   color: rgba(0, 110, 198, 1) !important;
   cursor: pointer;
+  width: max-content;
 }
 
 /* cerateNewStock-btn */
@@ -557,6 +558,15 @@
 .cerateNewStock-blur {
   filter: blur(3px);
   pointer-events: none;
+}
+@media (max-width: 1050px) {
+  .cerateNewStock-btn {
+    top: 55%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 60%;
+    height: 75%;
+  }
 }
 @media (max-width: 500px) {
   .cerateNewStock-totals-container > nav {
@@ -583,5 +593,14 @@
 @media (max-width: 650px) {
   .cerateNewStock-btn-container {
     justify-content: end;
+  }
+}
+@media (max-width: 430px) {
+  .cerateNewStock-btn {
+    top: 55%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80%;
+    height: 75%;
   }
 }

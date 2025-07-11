@@ -65,13 +65,25 @@
 /* createNewStockSerial-division */
 .createNewStockSerial-division {
   display: flex;
+  flex-direction: row;
   gap: 15px;
+  height: calc(100% - 200px); /* Adjust based on your header height */
+  min-height: 400px; /* Set a minimum height */
 }
 .createNewStockSerial-division > nav {
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 .createNewStockSerial-table {
   flex: 1;
+  background-color: rgba(242, 242, 242, 1);
+  overflow: auto;
+  border-radius: 10px;
+  border: 1px solid rgba(0, 0, 0, 0.16);
+  height: 100%; /* Match parent height */
+  max-height: 100%; /* Prevent overflow */
 }
 /* left side */
 .createNewStockSerial-serial-inp {
@@ -85,23 +97,33 @@
   gap: 15px;
   justify-content: start;
   align-items: center;
+  flex-wrap: wrap;
 }
 .createNewStockSerial-serial-inp-box > label {
   color: rgba(35, 78, 112, 1);
   font-size: 14px;
   font-weight: 500;
 }
-.createNewStockSerial-serial-inp-box > input {
+.createNewStockSerial-serial-inp-box > input,
+.createNewStockSerial-serial-inp-box > textarea {
   border: 1px solid rgba(224, 228, 231, 1);
   padding: 4px 8px;
   border-radius: 4px;
   flex: 1;
+  background-color: transparent;
 }
-.createNewStockSerial-serial-inp-box > input::placeholder {
+.createNewStockSerial-serial-inp-box > input::placeholder,
+.createNewStockSerial-serial-inp-box > textarea::placeholder {
   color: rgba(176, 176, 176, 1);
 }
-.createNewStockSerial-serial-inp-box > input:focus {
+.createNewStockSerial-serial-inp-box > input:focus,
+.createNewStockSerial-serial-inp-box > textarea:focus {
   outline: none;
+}
+#createNewStockSerial-import-serial {
+  min-height: 60px;
+  border: 0;
+  text-align: start;
 }
 .createNewStockSerial-serial-inp > button {
   width: 100%;
@@ -112,4 +134,80 @@
   color: white;
   font-weight: 600;
   font-size: 14px;
+}
+/* tit */
+.createNewStockSerial-imp-serialnum {
+  font-size: 14px;
+  font-weight: 500;
+  color: rgba(35, 78, 112, 1);
+  margin-bottom: 4px;
+  cursor: pointer;
+  width: max-content;
+}
+/* duplicate */
+.createNewStockSerial-duplicate-tit {
+  font-size: 14px;
+  font-weight: 500;
+  color: rgb(0, 0, 0);
+  margin-bottom: 4px;
+  width: max-content;
+}
+.createNewStockSerial-duplicate-box {
+  width: 100%;
+  background-color: rgba(249, 249, 249, 1);
+  font-size: 14px;
+  font-weight: 400;
+  padding: 12px 16px;
+  border: 1px solid rgba(226, 226, 226, 1);
+  border-radius: 10px;
+  min-height: 60px;
+  max-height: fit-content;
+}
+/* right */
+.createNewStockSerial-table > table {
+  width: 100%;
+  border-radius: 10px;
+  background-color: #fff;
+}
+
+.createNewStockSerial-table-head > tr {
+  border-radius: 13px 13px 0 0;
+}
+.createNewStockSerial-table-head > tr > th {
+  font-size: 14px;
+  font-weight: 500;
+  background-color: #fff;
+  color: rgba(35, 78, 112, 1);
+  padding: 12px 16px;
+  border-bottom: 1px solid hsla(0, 0%, 0%, 0.119);
+  text-align: start;
+}
+.createNewStockSerial-table-body > tr > td {
+  font-size: 14px;
+  font-weight: 400;
+  text-align: start;
+  background-color: #fff;
+  color: black;
+  padding: 12px 16px;
+  border-bottom: 1px solid hsla(0, 0%, 0%, 0.119);
+}
+/* button container */
+.createNewStockSerial-btn-container {
+  margin-top: 20px;
+  width: 100%;
+  display: flex;
+  justify-content: end;
+  align-items: center;
+  gap: 15px;
+  flex-wrap: wrap-reverse;
+}
+@media (max-width: 950px) {
+  .createNewStockSerial-division {
+    flex-direction: column;
+    height: auto;
+  }
+  .createNewStockSerial-table {
+    max-height: 400px;
+    margin-top: 20px;
+  }
 }
