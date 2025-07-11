@@ -533,6 +533,31 @@
   gap: 18px;
   flex-wrap: wrap;
 }
+/* stock dim */
+.cerateNewStock-stockDim-blue {
+  color: rgba(0, 110, 198, 1) !important;
+  cursor: pointer;
+}
+
+/* cerateNewStock-btn */
+
+.cerateNewStock-btn {
+  position: fixed;
+  top: 55%;
+  left: 60%;
+  transform: translate(-50%, -50%);
+  z-index: 9;
+  width: 65%;
+  height: 78%;
+  background: #fff;
+  border: 2px solid rgba(35, 78, 112, 0.7);
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(171, 178, 187, 0.3);
+}
+.cerateNewStock-blur {
+  filter: blur(3px);
+  pointer-events: none;
+}
 @media (max-width: 500px) {
   .cerateNewStock-totals-container > nav {
     flex-direction: column;

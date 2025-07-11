@@ -7,7 +7,7 @@ import StockHistory from "./stockHistory";
 import StockAttachment from "./stockAttachment";
 import { toast } from "react-toastify";
 
-export default function editNewStockReceipt() {
+export default function editNewStockReceipt({ setCurrentPage }) {
   const prevpg = useNavigate();
   const [stockReceiptStatus, setStockReceiptstatus] = useState("");
   const [numOfStockList, setNumOfStockList] = useState(1);

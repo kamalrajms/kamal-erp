@@ -5,9 +5,10 @@ import StockListItem from "./stockListItem";
 import StockComment from "./stockComment";
 import StockHistory from "./stockHistory";
 import StockAttachment from "./stockAttachment";
+import StockSerialNumber from "./stock-serial-num/stockSerialNumber";
 import { toast } from "react-toastify";
 
-export default function createNewStockReceipt() {
+export default function createNewStockReceipt({ setCurrentPage }) {
   const prevpg = useNavigate();
   const [stockReceiptStatus, setStockReceiptstatus] = useState("");
   const [numOfStockList, setNumOfStockList] = useState(1);
@@ -24,6 +25,14 @@ export default function createNewStockReceipt() {
     pdf: true,
     mail: true,
     stock_return: true,
+  });
+
+  // serial & batch
+  const [stockDim, setStockDim] = useState({
+    serialBox: false,
+    batchBox: false,
+    activeRow: null, // stores the row index
+    activeProduct: null, // stores product data if needed
   });
 
   const [detail, setDetail] = useState({
@@ -245,9 +254,20 @@ export default function createNewStockReceipt() {
     setStockReceiptstatus("Cancelled");
     toast.success("Stock Receipt Item in Cancelled GRN State");
   };
+  console.log(stockDim.activeProduct);
+
   return (
     <>
-      <div className="cerateNewStock-container">
+      {stockDim.serialBox && (
+        <div className="cerateNewStock-btn">
+          <StockSerialNumber />
+        </div>
+      )}
+      <div
+        className={`cerateNewStock-container ${
+          (stockDim.serialBox || stockDim.batchBox) && "cerateNewStock-blur"
+        }`}
+      >
         <form onSubmit={handleSubmittedState}>
           <div className="cerateNewStock-head">
             <nav>
@@ -460,6 +480,8 @@ export default function createNewStockReceipt() {
                     stockData={stockData}
                     //disable
                     BtnAccess={stockBtn.BtnAccess}
+                    //serial&batch
+                    setStockDim={setStockDim}
                   />
                 ))}
                 <tr>

@@ -194,9 +194,9 @@ export default function body({
         ) : currentPage == "stockReceipt" ? (
           <StockReceipt setCurrentPage={setCurrentPage} />
         ) : currentPage == "createNewStockReceipt" ? (
-          <CreateNewStockReceipt />
+          <CreateNewStockReceipt setCurrentPage={setCurrentPage} />
         ) : currentPage == "editStockReceipt" ? (
-          <EditStockReceipt />
+          <EditStockReceipt setCurrentPage={setCurrentPage} />
         ) : currentPage == "task" ? (
           <Task />
         ) : currentPage == "attendance" ? (

@@ -7,6 +7,7 @@ export default function StockListItem({
   stockData,
   stockInput,
   BtnAccess,
+  setStockDim,
 }) {
   const [productData, setProductData] = useState({
     product_name: "",
@@ -73,7 +74,6 @@ export default function StockListItem({
       }
     }
   };
-  console.log(productData);
 
   return (
     <tr key={unique_key}>
@@ -92,7 +92,27 @@ export default function StockListItem({
           BtnAccess={BtnAccess}
         />
       </td>
-      <td>{productData.product_id}</td>
+      <td
+        className={productData.stock_dim ? "cerateNewStock-stockDim-blue" : ""}
+        onClick={() => {
+          setStockDim({
+            serialBox: productData.stock_dim === "Serial",
+            batchBox: productData.stock_dim === "Batch",
+            activeRow:
+              productData.stock_dim === "Serial" ||
+              productData.stock_dim === "Batch"
+                ? unique_key
+                : null,
+            activeProduct:
+              productData.stock_dim === "Serial" ||
+              productData.stock_dim === "Batch"
+                ? productData
+                : null,
+          });
+        }}
+      >
+        {productData.product_id}
+      </td>
       <td>{productData.umo}</td>
       <td>{productData.qty_ordered}</td>
       <td>
