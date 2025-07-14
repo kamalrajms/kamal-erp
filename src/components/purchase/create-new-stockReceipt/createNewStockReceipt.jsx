@@ -260,7 +260,7 @@ export default function createNewStockReceipt({ setCurrentPage }) {
     <>
       {stockDim.serialBox && (
         <div className="cerateNewStock-btn">
-          <StockSerialNumber />
+          <StockSerialNumber setStockDim={setStockDim} />
         </div>
       )}
       <div

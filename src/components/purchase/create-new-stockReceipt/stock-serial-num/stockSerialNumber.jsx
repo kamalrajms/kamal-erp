@@ -1,7 +1,21 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import "./stockSerialNumber.css";
 
-export default function stockSerialNumber() {
+export default function stockSerialNumber({ setStockDim }) {
+  const [importBox, setImportBox] = useState(false);
+
+  const [serialInp, setSerialInp] = useState({
+    stock_dim: "",
+    serial_no: "",
+    import_serial: "",
+  });
+
+  const handelSerialChange = (e) => {
+    setSerialInp((prev) => {
+      return { ...prev, [e.target.id]: e.target.value };
+    });
+  };
+
   return (
     <>
       <div className="createNewStockSerial-container">
@@ -21,7 +35,11 @@ export default function stockSerialNumber() {
           </div>
           <div>
             <label htmlFor="stock_dim">Stock Dim.</label>
-            <select id="stock_dim">
+            <select
+              id="stock_dim"
+              value={serialInp.stock_dim}
+              onChange={handelSerialChange}
+            >
               <option value="Serial">Serial</option>
               <option value="Batch">Batch</option>
             </select>
@@ -45,26 +63,58 @@ export default function stockSerialNumber() {
               <div className="createNewStockSerial-serial-inp-box">
                 <label htmlFor="serial_no">Serial No :</label>
                 <input
+                  value={serialInp.serial_no}
+                  onChange={handelSerialChange}
                   type="text"
                   id="serial_no"
                   placeholder="Enter Serial Number"
                 />
               </div>
-              <button>Add Serial</button>
+              <button
+                className={
+                  serialInp.serial_no === ""
+                    ? "createNewStockSerial-serial-inactive"
+                    : "createNewStockSerial-serial-active"
+                }
+                disabled={serialInp.serial_no === ""}
+              >
+                Add Serial
+              </button>
             </form>
-            <p className="createNewStockSerial-imp-serialnum">
+            <p
+              className={`createNewStockSerial-imp-serialnum ${
+                importBox === false
+                  ? "createNewStockSerial-imp-serialnum-blue"
+                  : "createNewStockSerial-imp-serialnum-black"
+              }`}
+              onClick={() => setImportBox(!importBox)}
+            >
               Import Serial Numbers
             </p>
-            <form className="createNewStockSerial-serial-inp">
-              <div className="createNewStockSerial-serial-inp-box">
-                <textarea
-                  id="createNewStockSerial-import-serial"
-                  type="text"
-                  placeholder="Enter Serial Numbers (eg., Item-001, Item-002, etc.)"
-                />
-              </div>
-              <button>Import</button>
-            </form>
+            {importBox && (
+              <form className="createNewStockSerial-serial-inp">
+                <div className="createNewStockSerial-serial-inp-box">
+                  <textarea
+                    value={serialInp.import_serial}
+                    onChange={handelSerialChange}
+                    id="import_serial"
+                    type="text"
+                    placeholder="Enter Serial Numbers (eg., Item-001, Item-002, etc.)"
+                  />
+                </div>
+                <button
+                  className={
+                    serialInp.import_serial === ""
+                      ? "createNewStockSerial-serial-inactive"
+                      : "createNewStockSerial-serial-active"
+                  }
+                  disabled={serialInp.import_serial === ""}
+                >
+                  Import
+                </button>
+              </form>
+            )}
+
             <p className="createNewStockSerial-duplicate-tit">
               Duplicate Numbers
             </p>
@@ -155,7 +205,14 @@ export default function stockSerialNumber() {
           </div>
         </div>
         <div className="createNewStockSerial-btn-container">
-          <button>Cancel</button>
+          <button
+            className="cerateNewStock-cancel-btn"
+            onClick={() => {
+              setStockDim({ serialBox: false });
+            }}
+          >
+            Cancel
+          </button>
           <button>Apply</button>
         </div>
       </div>
