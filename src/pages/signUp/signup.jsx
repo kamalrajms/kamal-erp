@@ -5,14 +5,13 @@ import { useDispatch } from "react-redux";
 import { login } from "../../redux/authSlice";
 import { Link } from "react-router-dom";
 import siteLogo from "../../assets/signin/sitelogo.png";
-import axios from "axios";
-import { toast } from "react-toastify";
 
 export default function signup() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
   // controlling inputs
+
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [userMail, setUserMail] = useState("");
@@ -26,71 +25,26 @@ export default function signup() {
   const [focuspassword, setfocuspassword] = useState(false);
 
   const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
 
-  async function handleSignIn(e) {
-    e.preventDefault();
-    setIsLoading(true);
-
-    try {
-      const response = await axios.post(
-        "https://saikumar99.pythonanywhere.com/api/register/",
-        {
-          name: name,
-          mobile: phone,
-          email: userMail,
-          password: password,
-          job_role: role,
-        },
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      if (response.data) {
-        const userData = {
-          user: {
-            id: response.data.user?.id || Date.now(),
-            name: response.data.user?.name || name,
-            email: response.data.user?.email || userMail,
-            profilePic:
-              response.data.user?.profile_pic ||
-              "https://m.media-amazon.com/images/I/51T6MpbpQLL.jpg",
-            jobRole: response.data.user?.job_role || role,
-            mobile: response.data.user?.mobile || phone,
-          },
-          token: response.data.token,
-        };
-        dispatch(login(userData));
-        toast.success("Signed up successfully!!");
-        navigate("/");
-      }
-    } catch (error) {
-      console.error("Registration error:", error);
-      if (error.response) {
-        if (error.response.data) {
-          if (typeof error.response.data === "object") {
-            toast.error(error.response.data.message || "Registration failed");
-          } else {
-            console.error("Server returned:", error.response.data);
-            toast.error("Server error occurred");
-          }
-        } else {
-          toast.error("Registration failed. Please try again.");
-        }
-      } else {
-        toast.error("Network error. Please check your connection.");
-      }
-    } finally {
-      setIsLoading(false);
-    }
+  function handleSignIn() {
+    const userData = {
+      user: {
+        id: 1,
+        name: "John Doe",
+        email: "john@example.com",
+        profilePic: "https://m.media-amazon.com/images/I/51T6MpbpQLL.jpg",
+        jobRole: "Project manager",
+        mobile: "98897887676",
+      },
+    };
+    dispatch(login(userData));
+    toast.success("Signed up successfully!!");
+    navigate("/");
   }
 
   return (
     <div>
-      <form className="signup-page" onSubmit={handleSignIn}>
+      <form className="signup-page">
         <div className="signup-img">
           <img src={siteLogo} />
           <p>Turn ideas into action-stay organized, stay ahead.</p>
@@ -98,6 +52,7 @@ export default function signup() {
         <div className="signup-form">
           <div className="signup-cointained">
             <div className="welcome-signup">Sign Up</div>
+            {/* <p>Sign up to cointinue</p> */}
 
             <div
               className={`username-cointainer-up ${
@@ -111,11 +66,12 @@ export default function signup() {
                 placeholder="Name"
                 type="text"
                 value={name}
-                onChange={(e) => setName(e.target.value)}
+                onChange={(e) => {
+                  setName(e.target.value);
+                }}
                 required
               />
             </div>
-
             <div
               className={`username-cointainer-up ${
                 focusphone ? "user-border" : " "
@@ -126,9 +82,11 @@ export default function signup() {
               <input
                 className="inputdata increment-decrement-signup"
                 placeholder="Phone Number"
-                type="text" // Changed from number to text to avoid increment arrows
+                type="number"
                 value={phone}
-                onChange={(e) => setPhone(e.target.value)}
+                onChange={(e) => {
+                  setPhone(e.target.value);
+                }}
                 required
               />
             </div>
@@ -167,10 +125,11 @@ export default function signup() {
                 placeholder="Email"
                 required
                 value={userMail}
-                onChange={(e) => setUserMail(e.target.value)}
+                onChange={(e) => {
+                  setUserMail(e.target.value);
+                }}
               />
             </div>
-
             <div
               className={`password-cointainer-up ${
                 focuspassword ? "mail-border" : ""
@@ -185,8 +144,11 @@ export default function signup() {
                   placeholder="Password"
                   required
                   minLength="8"
+                  // pattern="^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                  }}
                 />
               ) : (
                 <input
@@ -197,14 +159,19 @@ export default function signup() {
                   placeholder="Password"
                   required
                   minLength="8"
+                  // pattern="^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                  }}
                 />
               )}
               {showPassword ? (
                 <svg
                   className="openeye-logo"
-                  onClick={() => setShowPassword(false)}
+                  onClick={() => {
+                    setShowPassword(false);
+                  }}
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 576 512"
                 >
@@ -213,7 +180,9 @@ export default function signup() {
               ) : (
                 <svg
                   className="closeeye-logo"
-                  onClick={() => setShowPassword(true)}
+                  onClick={() => {
+                    setShowPassword(true);
+                  }}
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 640 512"
                 >
@@ -221,15 +190,18 @@ export default function signup() {
                 </svg>
               )}
             </div>
-
-            <button
-              type="submit"
-              className="login-button-up"
-              disabled={isLoading}
-            >
-              {isLoading ? "Signing Up..." : "Sign Up"}
+            {/* <div className="tearms-cointainer">
+              <input type="checkbox" id="terms" required />
+              <label form="terms" className="agree">
+                I agree with{" "}
+                <a href="#" target="_blank">
+                  Terms & Conditions
+                </a>
+              </label>
+            </div> */}
+            <button onClick={handleSignIn} className="login-button-up">
+              Sign Up
             </button>
-
             <p id="changer-link-signup">
               Already Have an Account?{" "}
               <Link to={"/sign-in"} className="link-up">
