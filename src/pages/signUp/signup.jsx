@@ -41,13 +41,18 @@ export default function signup() {
           email: userMail,
           password: password,
           job_role: role,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
         }
       );
 
       if (response.data) {
         const userData = {
           user: {
-            id: response.data.user?.id || 1,
+            id: response.data.user?.id || Date.now(),
             name: response.data.user?.name || name,
             email: response.data.user?.email || userMail,
             profilePic:
@@ -63,9 +68,15 @@ export default function signup() {
         navigate("/");
       }
     } catch (error) {
+      console.error("Registration error:", error);
       if (error.response) {
         if (error.response.data) {
-          toast.error(error.response.data.message || "Registration failed");
+          if (typeof error.response.data === "object") {
+            toast.error(error.response.data.message || "Registration failed");
+          } else {
+            console.error("Server returned:", error.response.data);
+            toast.error("Server error occurred");
+          }
         } else {
           toast.error("Registration failed. Please try again.");
         }
@@ -87,7 +98,6 @@ export default function signup() {
         <div className="signup-form">
           <div className="signup-cointained">
             <div className="welcome-signup">Sign Up</div>
-            {/* <p>Sign up to cointinue</p> */}
 
             <div
               className={`username-cointainer-up ${
@@ -101,12 +111,11 @@ export default function signup() {
                 placeholder="Name"
                 type="text"
                 value={name}
-                onChange={(e) => {
-                  setName(e.target.value);
-                }}
+                onChange={(e) => setName(e.target.value)}
                 required
               />
             </div>
+
             <div
               className={`username-cointainer-up ${
                 focusphone ? "user-border" : " "
@@ -117,11 +126,9 @@ export default function signup() {
               <input
                 className="inputdata increment-decrement-signup"
                 placeholder="Phone Number"
-                type="number"
+                type="text" // Changed from number to text to avoid increment arrows
                 value={phone}
-                onChange={(e) => {
-                  setPhone(e.target.value);
-                }}
+                onChange={(e) => setPhone(e.target.value)}
                 required
               />
             </div>
@@ -160,11 +167,10 @@ export default function signup() {
                 placeholder="Email"
                 required
                 value={userMail}
-                onChange={(e) => {
-                  setUserMail(e.target.value);
-                }}
+                onChange={(e) => setUserMail(e.target.value)}
               />
             </div>
+
             <div
               className={`password-cointainer-up ${
                 focuspassword ? "mail-border" : ""
@@ -179,11 +185,8 @@ export default function signup() {
                   placeholder="Password"
                   required
                   minLength="8"
-                  // pattern="^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$"
                   value={password}
-                  onChange={(e) => {
-                    setPassword(e.target.value);
-                  }}
+                  onChange={(e) => setPassword(e.target.value)}
                 />
               ) : (
                 <input
@@ -194,19 +197,14 @@ export default function signup() {
                   placeholder="Password"
                   required
                   minLength="8"
-                  // pattern="^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$"
                   value={password}
-                  onChange={(e) => {
-                    setPassword(e.target.value);
-                  }}
+                  onChange={(e) => setPassword(e.target.value)}
                 />
               )}
               {showPassword ? (
                 <svg
                   className="openeye-logo"
-                  onClick={() => {
-                    setShowPassword(false);
-                  }}
+                  onClick={() => setShowPassword(false)}
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 576 512"
                 >
@@ -215,9 +213,7 @@ export default function signup() {
               ) : (
                 <svg
                   className="closeeye-logo"
-                  onClick={() => {
-                    setShowPassword(true);
-                  }}
+                  onClick={() => setShowPassword(true)}
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 640 512"
                 >
@@ -225,15 +221,7 @@ export default function signup() {
                 </svg>
               )}
             </div>
-            {/* <div className="tearms-cointainer">
-              <input type="checkbox" id="terms" required />
-              <label form="terms" className="agree">
-                I agree with{" "}
-                <a href="#" target="_blank">
-                  Terms & Conditions
-                </a>
-              </label>
-            </div> */}
+
             <button
               type="submit"
               className="login-button-up"
@@ -241,6 +229,7 @@ export default function signup() {
             >
               {isLoading ? "Signing Up..." : "Sign Up"}
             </button>
+
             <p id="changer-link-signup">
               Already Have an Account?{" "}
               <Link to={"/sign-in"} className="link-up">
