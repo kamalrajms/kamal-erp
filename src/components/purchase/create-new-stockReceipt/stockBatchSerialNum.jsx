@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from "react";
-import "./stockSerialNumber.css";
+import "./stock-serial-num/stockSerialNumber.css";
 
-export default function stockSerialNumber({ setStockDim }) {
+export default function stockBatchSerialNum({ setStockDim }) {
   const [importBox, setImportBox] = useState(false);
 
   const [serialInp, setSerialInp] = useState({
-    stock_dim: "",
     serial_no: "",
     import_serial: "",
   });
@@ -19,44 +18,15 @@ export default function stockSerialNumber({ setStockDim }) {
   return (
     <>
       <div className="createNewStockSerial-container">
-        <h3>Generate Serial Numbers</h3>
+        <h3>Generate Serial Numbers by Batch</h3>
         <div className="createNewStockSerial-input-container">
           <div>
-            <label htmlFor="product_name">Product Name</label>
-            <input id="product_name" disabled />
+            <label htmlFor="batch_number">Batch number</label>
+            <input id="batch_number" disabled />
           </div>
           <div>
-            <label htmlFor="product_id">Product ID</label>
-            <input id="product_id" disabled />
-          </div>
-          <div>
-            <label htmlFor="uom">UOM</label>
-            <input id="uom" disabled />
-          </div>
-          <div>
-            <label htmlFor="stock_dim">Stock Dim.</label>
-            <select
-              id="stock_dim"
-              value={serialInp.stock_dim}
-              onChange={() => {
-                handelSerialChange;
-                setStockDim({
-                  serialBox: false,
-                  batchBox: true,
-                });
-              }}
-            >
-              <option value="Serial">Serial</option>
-              <option value="Batch">Batch</option>
-            </select>
-          </div>
-          <div>
-            <label htmlFor="qty_received">Qty Received</label>
-            <input id="qty_received" disabled />
-          </div>
-          <div>
-            <label htmlFor="accepted_qty">Accepted Qty</label>
-            <input id="accepted_qty" disabled />
+            <label htmlFor="batch_quantity">Batch Quantity</label>
+            <input id="batch_quantity" disabled />
           </div>
           <div>
             <label htmlFor="serials_generated">Serials Generated</label>

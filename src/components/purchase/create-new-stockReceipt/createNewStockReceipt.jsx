@@ -6,6 +6,8 @@ import StockComment from "./stockComment";
 import StockHistory from "./stockHistory";
 import StockAttachment from "./stockAttachment";
 import StockSerialNumber from "./stock-serial-num/stockSerialNumber";
+import StockBatchNumber from "./stock-batch-num/stockBatchNumber";
+import StockBatchSerialNum from "./stockBatchSerialNum";
 import { toast } from "react-toastify";
 
 export default function createNewStockReceipt({ setCurrentPage }) {
@@ -31,6 +33,7 @@ export default function createNewStockReceipt({ setCurrentPage }) {
   const [stockDim, setStockDim] = useState({
     serialBox: false,
     batchBox: false,
+    batchSerialNO: false,
     activeRow: null, // stores the row index
     activeProduct: null, // stores product data if needed
   });
@@ -263,9 +266,21 @@ export default function createNewStockReceipt({ setCurrentPage }) {
           <StockSerialNumber setStockDim={setStockDim} />
         </div>
       )}
+      {stockDim.batchBox && (
+        <div className="cerateNewStock-btn">
+          <StockBatchNumber setStockDim={setStockDim} />
+        </div>
+      )}
+      {stockDim.batchSerialNO && (
+        <div className="cerateNewStock-btn">
+          <StockBatchSerialNum setStockDim={setStockDim} />
+        </div>
+      )}
+
       <div
         className={`cerateNewStock-container ${
-          (stockDim.serialBox || stockDim.batchBox) && "cerateNewStock-blur"
+          (stockDim.serialBox || stockDim.batchBox || stockDim.batchSerialNO) &&
+          "cerateNewStock-blur"
         }`}
       >
         <form onSubmit={handleSubmittedState}>
