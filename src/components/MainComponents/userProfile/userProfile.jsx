@@ -4,14 +4,43 @@ import { useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 
-export default function userProfile() {
+export default function UserProfile() {
   const { user, isAuthenticated } = useSelector((state) => state.auth);
   const [userDetails, setUserDetails] = useState(user);
   const BackFromProfile = useNavigate();
-
   const inputRef = useRef(0);
 
-  const handleImageChange = (event) => {
+  // Fetch user profile data on component mount
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const response = await fetch(
+          "https://saikumar99.pythonanywhere.com/api/profile/",
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch profile data");
+        }
+
+        const data = await response.json();
+        setUserDetails((prev) => ({ ...prev, ...data }));
+      } catch (error) {
+        toast.error(error.message);
+      }
+    };
+
+    if (isAuthenticated) {
+      fetchProfile();
+    }
+  }, [isAuthenticated]);
+
+  const handleImageChange = async (event) => {
     const file = event.target.files[0];
     if (file) {
       const preview = URL.createObjectURL(file);
@@ -22,7 +51,30 @@ export default function userProfile() {
         };
       });
 
-      toast.success("Profile Picture Uploaded Successflly ");
+      // Prepare form data for image upload
+      const formData = new FormData();
+      formData.append("profile_pic", file);
+
+      try {
+        const response = await fetch(
+          "https://saikumar99.pythonanywhere.com/api/profile/",
+          {
+            method: "PATCH",
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+            },
+            body: formData,
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error("Failed to upload profile picture");
+        }
+
+        toast.success("Profile Picture Uploaded Successfully");
+      } catch (error) {
+        toast.error(error.message);
+      }
     }
   };
 
@@ -35,12 +87,35 @@ export default function userProfile() {
     });
   }
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
 
-    console.log(userDetails);
+    try {
+      const response = await fetch(
+        "https://saikumar99.pythonanywhere.com/api/profile/",
+        {
+          method: "PATCH",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            job_role: userDetails.jobRole,
+            mobile: userDetails.mobile,
+          }),
+        }
+      );
 
-    BackFromProfile(-1);
+      if (!response.ok) {
+        throw new Error("Failed to update profile");
+      }
+
+      const data = await response.json();
+      toast.success("Profile updated successfully");
+      BackFromProfile(-1);
+    } catch (error) {
+      toast.error(error.message);
+    }
   }
 
   return (
@@ -73,7 +148,7 @@ export default function userProfile() {
           <input
             type="text"
             id="jobRole"
-            value={userDetails.jobRole}
+            value={userDetails.jobRole || ""}
             onChange={handleDetailChange}
           />
         </div>
@@ -83,7 +158,7 @@ export default function userProfile() {
           <input
             type="text"
             id="mobile"
-            value={userDetails.mobile}
+            value={userDetails.mobile || ""}
             onChange={handleDetailChange}
           />
         </div>
