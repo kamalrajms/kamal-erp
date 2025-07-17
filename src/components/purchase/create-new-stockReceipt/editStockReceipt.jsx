@@ -5,9 +5,12 @@ import StockListItem from "./stockListItem";
 import StockComment from "./stockComment";
 import StockHistory from "./stockHistory";
 import StockAttachment from "./stockAttachment";
+import StockSerialNumber from "./stock-serial-num/stockSerialNumber";
+import StockBatchNumber from "./stock-batch-num/stockBatchNumber";
+import StockBatchSerialNum from "./stockBatchSerialNum";
 import { toast } from "react-toastify";
 
-export default function editNewStockReceipt({ setCurrentPage }) {
+export default function createNewStockReceipt({ setCurrentPage }) {
   const prevpg = useNavigate();
   const [stockReceiptStatus, setStockReceiptstatus] = useState("");
   const [numOfStockList, setNumOfStockList] = useState(1);
@@ -24,6 +27,15 @@ export default function editNewStockReceipt({ setCurrentPage }) {
     pdf: true,
     mail: true,
     stock_return: true,
+  });
+
+  // serial & batch
+  const [stockDim, setStockDim] = useState({
+    serialBox: false,
+    batchBox: false,
+    batchSerialNO: false,
+    activeRow: null, // stores the row index
+    activeProduct: null, // stores product data if needed
   });
 
   const [detail, setDetail] = useState({
@@ -105,9 +117,9 @@ export default function editNewStockReceipt({ setCurrentPage }) {
   };
   const [stockInput, setStockInput] = useState({
     grn_id: "",
-    po_reference_id: "", // ← Must be empty string, not undefined
+    po_reference_id: "",
     received_date: "",
-    supplier_name: "", // ← Must be empty string
+    supplier_name: "",
     supplier_dn_no: "",
     supplier_invoice_no: "",
     received_by: "",
@@ -245,9 +257,32 @@ export default function editNewStockReceipt({ setCurrentPage }) {
     setStockReceiptstatus("Cancelled");
     toast.success("Stock Receipt Item in Cancelled GRN State");
   };
+  console.log(stockDim.activeProduct);
+
   return (
     <>
-      <div className="cerateNewStock-container">
+      {stockDim.serialBox && (
+        <div className="cerateNewStock-btn">
+          <StockSerialNumber setStockDim={setStockDim} />
+        </div>
+      )}
+      {stockDim.batchBox && (
+        <div className="cerateNewStock-btn">
+          <StockBatchNumber setStockDim={setStockDim} />
+        </div>
+      )}
+      {stockDim.batchSerialNO && (
+        <div className="cerateNewStock-btn">
+          <StockBatchSerialNum setStockDim={setStockDim} />
+        </div>
+      )}
+
+      <div
+        className={`cerateNewStock-container ${
+          (stockDim.serialBox || stockDim.batchBox || stockDim.batchSerialNO) &&
+          "cerateNewStock-blur"
+        }`}
+      >
         <form onSubmit={handleSubmittedState}>
           <div className="cerateNewStock-head">
             <nav>
@@ -460,6 +495,8 @@ export default function editNewStockReceipt({ setCurrentPage }) {
                     stockData={stockData}
                     //disable
                     BtnAccess={stockBtn.BtnAccess}
+                    //serial&batch
+                    setStockDim={setStockDim}
                   />
                 ))}
                 <tr>

@@ -386,6 +386,7 @@ export default function createNewSales({ setCurrentPage }) {
             purchase_order={purchase_order}
             //stock level
             SalesList_data={SalesList_data}
+            setCurrentPage={setCurrentPage}
           />
         </div>
       )}
@@ -991,6 +992,9 @@ export default function createNewSales({ setCurrentPage }) {
                     : "createNewSales-completed-btn"
                 }
                 disabled={salesBtn.Generate_po}
+                onClick={() => {
+                  setCurrentPage("createNewPurchase");
+                }}
               >
                 Generate (PO)
               </button>

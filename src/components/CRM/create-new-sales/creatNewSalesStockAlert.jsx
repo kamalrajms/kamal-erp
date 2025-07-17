@@ -7,6 +7,7 @@ export default function creatNewSalesStockAlert({
   setSalesStatus,
   purchase_order,
   SalesList_data,
+  setCurrentPage,
 }) {
   const hasZeroStock = SalesList_data.some(
     ({ stock_level = 0 }) => Number(stock_level) === 0
@@ -40,6 +41,9 @@ export default function creatNewSalesStockAlert({
                 : "createNewSales-active-btn "
             }
             disabled={purchase_order === "Purchase Ordered" ? true : false}
+            onClick={() => {
+              setCurrentPage("createNewPurchase");
+            }}
           >
             Generate Purchase Order
           </button>

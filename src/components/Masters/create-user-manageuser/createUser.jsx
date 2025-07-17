@@ -90,7 +90,7 @@ export default function createUser({
                 id="first_name"
                 name="first_name"
                 type="text"
-                placeholder="Kamal"
+                placeholder="First Name"
                 value={createUserForm.first_name}
                 onChange={handleCreateUserChange}
                 required
@@ -104,7 +104,7 @@ export default function createUser({
                 id="last_name"
                 name="last_name"
                 type="text"
-                placeholder="Raj"
+                placeholder="Last Name"
                 value={createUserForm.last_name}
                 onChange={handleCreateUserChange}
                 required

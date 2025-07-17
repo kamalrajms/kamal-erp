@@ -33,6 +33,8 @@ import EditPurchase from "../../purchase/create-new-purchaseOrder/editPurchase";
 import StockReceipt from "../../purchase/stock-receipt/stockReceipt";
 import CreateNewStockReceipt from "../../purchase/create-new-stockReceipt/createNewStockReceipt";
 import EditStockReceipt from "../../purchase/create-new-stockReceipt/editStockReceipt";
+import StockReturn from "../../purchase/stock-return/stockReturn";
+import CreateNewStockReturn from "../../purchase/create-new-stockReturn/createNewStockReturn";
 
 export default function body({
   expanded,
@@ -131,7 +133,7 @@ export default function body({
             className="profile-logo"
             onClick={() => setShowUserDetails((prev) => !prev)}
           >
-            {user.profilePic ? (
+            {user.profilePic === true ? (
               <img src={user.profilePic} alt="user Profile" />
             ) : (
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512">
@@ -197,6 +199,10 @@ export default function body({
           <CreateNewStockReceipt setCurrentPage={setCurrentPage} />
         ) : currentPage == "editStockReceipt" ? (
           <EditStockReceipt setCurrentPage={setCurrentPage} />
+        ) : currentPage == "stockReturn" ? (
+          <StockReturn setCurrentPage={setCurrentPage} />
+        ) : currentPage == "createNewStockReturn" ? (
+          <CreateNewStockReturn />
         ) : currentPage == "task" ? (
           <Task />
         ) : currentPage == "attendance" ? (
