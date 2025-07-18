@@ -7,7 +7,7 @@
 
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  /* gap: 15px; */
   align-items: start;
   justify-content: start;
   padding: 20px 10px;
@@ -27,6 +27,7 @@
   position: relative;
   width: 100%;
   text-align: start;
+  margin-bottom: 15px;
 }
 .small-x-logo {
   width: 20px;
@@ -36,7 +37,17 @@
   top: 1px;
   right: 1px;
 }
-.sidebar-container > nav {
+.sidebarbox {
+  width: 100%;
+  overflow: auto;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+}
+
+.sidebarbox::-webkit-scrollbar {
+  display: none; /* Chrome/Safari/Opera */
+}
+.sidebar-container > .sidebarbox > nav {
   display: flex;
   align-items: center;
   flex-direction: row;
@@ -46,8 +57,9 @@
   color: #234e70;
   font-weight: 500;
   transition: color 0.3s ease;
+  padding: 12px 16px;
 }
-.sidebar-container > nav > p {
+.sidebar-container > .sidebarbox > nav > p {
   color: #234e70;
   font-weight: 500;
   transition: color 0.3s ease;
@@ -55,19 +67,23 @@
 .aline-end {
   display: flex;
   flex-direction: row;
-  justify-content: space-between;
+  justify-content: space-between !important;
   align-items: center;
 }
-.masters-list > nav {
+.sidebar-container > .sidebarbox > nav.activeNav > p {
+  color: #fff;
+}
+/* .masters-list > nav {
   display: flex;
   gap: 12px;
   align-items: center;
   cursor: pointer;
   transition: color 0.3s ease;
-  color: #234e70;
+  color: rgba(42, 42, 42, 1);
   font-weight: 500;
   transition: color 0.3s ease;
-}
+  padding: 8px 12px;
+} */
 
 @keyframes ani {
   from {
