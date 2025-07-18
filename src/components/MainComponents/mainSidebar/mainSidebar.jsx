@@ -24,7 +24,7 @@ export default function mainSidebar({
           <img src={siteSmallLogo} alt="Site Logo" id="small-logo" />
         )}
       </div>
-      {!expanded && <nav className="menu-name">MENU</nav>}
+      {/* {!expanded && <nav className="menu-name">MENU</nav>} */}
       <div className="menu">
         <nav
           className={`hovered ${currentPage === "dashboard" && "activeNav"}`}
