@@ -477,7 +477,7 @@
 .createNewPurchase-status-detailes > nav {
   display: flex;
   justify-items: start;
-  align-items: center;
+  align-items: start;
   gap: 10px;
 }
 .createNewPurchase-status-detailes > nav > p {
