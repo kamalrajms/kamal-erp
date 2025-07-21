@@ -5,9 +5,10 @@ import ReturnListItem from "./returnListItem";
 import ReturnComment from "./returnComment";
 import ReturnHistory from "./returnHistory";
 import ReturnAttachment from "./returnAttachment";
+import { toast } from "react-toastify";
 
 export default function createNewStockReturn() {
-  const [receiptStatus, setReceiptStatus] = useState("");
+  const [ReturnStatus, setReturnStatus] = useState("");
   const prevpg = useNavigate();
 
   const [detail, setDetail] = useState({
@@ -18,30 +19,119 @@ export default function createNewStockReturn() {
 
   const [numOfReturnList, setnumOfReturnList] = useState(1);
   const [returnListData, setReturnListData] = useState([{ unique_key: 0 }]);
+
+  // status
+  const [returnBtn, setReturnBtn] = useState({
+    buttonAcs: true,
+    cancel_order: true,
+    draft: false,
+    submit: false,
+    pdf: true,
+    mail: true,
+  });
+
+  useEffect(() => {
+    if (ReturnStatus === "") {
+      setReturnBtn((prev) => ({
+        ...prev,
+        buttonAcs: false,
+        cancel_order: true,
+        draft: false,
+        submit: false,
+        pdf: true,
+        mail: true,
+      }));
+    }
+    switch (ReturnStatus) {
+      case "Draft":
+        setReturnBtn((prev) => ({
+          ...prev,
+          buttonAcs: false,
+          cancel_order: true,
+          draft: false,
+          submit: false,
+          pdf: false,
+          mail: false,
+        }));
+        break;
+      case "Submitted":
+        setReturnBtn((prev) => ({
+          ...prev,
+          buttonAcs: true,
+          cancel_order: false,
+          draft: true,
+          submit: true,
+          pdf: false,
+          mail: false,
+        }));
+        break;
+      case "Submitted(PR)":
+        setReturnBtn((prev) => ({
+          ...prev,
+          buttonAcs: true,
+          cancel_order: false,
+          draft: true,
+          submit: true,
+          pdf: false,
+          mail: false,
+        }));
+        break;
+      case "Cancelled":
+        setReturnBtn((prev) => ({
+          ...prev,
+          buttonAcs: true,
+          cancel_order: true,
+          draft: true,
+          submit: true,
+          pdf: false,
+          mail: false,
+        }));
+        break;
+      default:
+        setReturnBtn((prev) => ({
+          ...prev,
+          BtnAccess: false,
+        }));
+    }
+  }, [ReturnStatus]);
+
+  const handleSaveDraftState = (e) => {
+    e.preventDefault();
+    setReturnStatus("Draft");
+    toast.success("Stock Return Item in Save Draft State");
+  };
+  const handleSubmittedState = (e) => {
+    e.preventDefault();
+    setReturnStatus("Submitted");
+    toast.success("Stock Return Item in Send State");
+  };
+  const handleCancelledState = (e) => {
+    e.preventDefault();
+    setReturnStatus("Cancelled");
+    toast.success("Stock Return Item in Cancelled State");
+  };
   return (
     <>
       <div className="createNewReturn-container">
-        <form>
+        <form onSubmit={handleSubmittedState}>
           <div className="createNewReturn-head">
             <nav>
-              <p>
-                {receiptStatus === "" ? "New Stock Return" : "Stock Return"}
-              </p>
-              {receiptStatus !== "" && (
+              <p>{ReturnStatus === "" ? "New Stock Return" : "Stock Return"}</p>
+              {ReturnStatus !== "" && (
                 <h3
                   className={
-                    receiptStatus === "Draft"
+                    ReturnStatus === "Draft"
                       ? "createNewReturn-Status-draft"
-                      : receiptStatus === "Submitted"
+                      : ReturnStatus === "Submitted"
                       ? "createNewReturn-Status-Submitted"
-                      : receiptStatus === "Cancelled"
+                      : ReturnStatus === "Cancelled"
                       ? "createNewReturn-Status-Cancelled"
-                      : receiptStatus === "Submitted(PR)"
+                      : ReturnStatus === "Submitted(PR)"
                       ? "createNewReturn-Status-SubmittedPR"
                       : "createNewReturn-Status-template"
                   }
                 >
-                  Status: Draft
+                  Status: {ReturnStatus}
                 </h3>
               )}
             </nav>
@@ -78,7 +168,12 @@ export default function createNewStockReturn() {
               <label htmlFor="grn_referance_id">
                 GRN Reference ID<sup>*</sup>
               </label>
-              <select name="" id="grn_referance_id" required>
+              <select
+                name=""
+                id="grn_referance_id"
+                required
+                disabled={returnBtn.buttonAcs}
+              >
                 <option value="">Select Purchase Order Ref</option>
                 <option value="PO-0001">PO-0001</option>
                 <option value="PO-0002">PO-0002</option>
@@ -90,7 +185,12 @@ export default function createNewStockReturn() {
               <label htmlFor="po_referance_id">
                 PO Reference ID<sup>*</sup>
               </label>
-              <select name="" id="po_referance_id" required>
+              <select
+                name=""
+                id="po_referance_id"
+                required
+                disabled={returnBtn.buttonAcs}
+              >
                 <option value="">Select PO Ref ID</option>
                 <option value="PO-0001">PO-0001</option>
                 <option value="PO-0002">PO-0002</option>
@@ -98,25 +198,36 @@ export default function createNewStockReturn() {
             </div>
             <div className="createNewReturn-input-box">
               <label htmlFor="received_date">Received Date</label>
-              <input id="received_date" type="date" />
+              <input
+                id="received_date"
+                type="date"
+                disabled={returnBtn.buttonAcs}
+              />
             </div>
           </div>
           <div className="createNewReturn-input-container">
             <div className="createNewReturn-input-box">
-              <label htmlFor="po_referance_id">
-                PO Reference ID<sup>*</sup>
+              <label htmlFor="return_date">
+                Return Date<sup>*</sup>
               </label>
-              <select name="" id="po_referance_id" required>
+              <input
+                id="return_date"
+                type="date"
+                required
+                disabled={returnBtn.buttonAcs}
+              />
+            </div>
+            <div className="createNewReturn-input-box">
+              <label htmlFor="return_initiated_by">Return Initiated By</label>
+              <select
+                name=""
+                id="return_initiated_by"
+                disabled={returnBtn.buttonAcs}
+              >
                 <option value="">Select PO Ref ID</option>
                 <option value="PO-0001">PO-0001</option>
                 <option value="PO-0002">PO-0002</option>
               </select>
-            </div>
-            <div className="createNewReturn-input-box">
-              <label htmlFor="return_date">
-                Return Date<sup>*</sup>
-              </label>
-              <input id="return_date" type="date" required />
             </div>
           </div>
           <div className="createNewReturn-input-container">
@@ -124,7 +235,12 @@ export default function createNewStockReturn() {
               <label htmlFor="supplier_name">
                 Supplier Name<sup>*</sup>
               </label>
-              <select name="" id="supplier_name" required>
+              <select
+                name=""
+                id="supplier_name"
+                required
+                disabled={returnBtn.buttonAcs}
+              >
                 <option value="">Select Supplier Name</option>
                 <option value="Mandy">Mandy</option>
                 <option value="Sans">Sans</option>
@@ -176,7 +292,7 @@ export default function createNewStockReturn() {
               </thead>
               <tbody className="createNewReturn-table-body">
                 {[...Array(numOfReturnList)].map((ele, ind) => (
-                  <ReturnListItem key={ind} />
+                  <ReturnListItem key={ind} buttonAcs={returnBtn.buttonAcs} />
                 ))}
                 <tr>
                   <td></td>
@@ -296,23 +412,23 @@ export default function createNewStockReturn() {
               {detail.comment && <ReturnComment />}
               {detail.history && <ReturnHistory />}
               {detail.attachment && (
-                <ReturnAttachment
-                // inputDisable={purchaseBtn.buttonAcs}
-                />
+                <ReturnAttachment inputDisable={returnBtn.buttonAcs} />
               )}
             </div>
           </div>
           <div className="createNewReturn-btn-container">
             <button
               className={
-                receiptStatus === "Submitted" ||
-                receiptStatus === "Submitted(PR)" ||
-                receiptStatus === "Cancelled"
+                ReturnStatus === "Submitted" ||
+                ReturnStatus === "Submitted(PR)" ||
+                ReturnStatus === "Cancelled"
                   ? "createNewReturn-order-active-btn"
                   : "createNewReturn-inactive-btn"
               }
+              onClick={handleCancelledState}
+              disabled={returnBtn.cancel_order}
             >
-              {receiptStatus === "Cancelled" ? "Cancel Return" : "Cancelled"}
+              {ReturnStatus === "Cancelled" ? "Cancel Return" : "Cancelled"}
             </button>
             <nav>
               <button
@@ -326,28 +442,32 @@ export default function createNewStockReturn() {
               </button>
               <button
                 className={
-                  receiptStatus === "" || receiptStatus === "Draft"
+                  ReturnStatus === "" || ReturnStatus === "Draft"
                     ? "createNewReturn-active-btn"
                     : "createNewReturn-completed-btn"
                 }
+                onClick={handleSaveDraftState}
+                disabled={returnBtn.draft}
               >
                 Save Draft
               </button>
               <button
                 className={
-                  receiptStatus === "" || receiptStatus === "Draft"
+                  ReturnStatus === "" || ReturnStatus === "Draft"
                     ? "createNewReturn-active-btn"
                     : "createNewReturn-completed-btn"
                 }
+                disabled={returnBtn.submit}
               >
-                {receiptStatus === "Submitted" ? "Submitted" : "Submit"}
+                {ReturnStatus === "Submitted" ? "Submitted" : "Submit"}
               </button>
               <svg
                 className={
-                  receiptStatus !== ""
+                  ReturnStatus !== ""
                     ? "createNewReturn-pdf-mail-activelogo"
                     : "createNewReturn-pdf-mail-futurelogo"
                 }
+                disabled={returnBtn.pdf}
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 22 24"
                 fill="none"
@@ -360,10 +480,11 @@ export default function createNewStockReturn() {
               </svg>
               <svg
                 className={
-                  receiptStatus !== ""
+                  ReturnStatus !== ""
                     ? "createNewReturn-pdf-mail-activelogo"
                     : "createNewReturn-pdf-mail-futurelogo"
                 }
+                disabled={returnBtn.mail}
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 20 16"
                 fill="none"

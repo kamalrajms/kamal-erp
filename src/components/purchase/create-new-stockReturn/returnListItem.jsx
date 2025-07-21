@@ -1,12 +1,12 @@
 import React from "react";
 import "./createNewStockReturn.css";
 
-export default function returnListItem() {
+export default function returnListItem({ buttonAcs }) {
   return (
     <tr>
       <td>1</td>
       <td>
-        <input type="text" name="" id="" />
+        <input type="text" name="" id="" disabled={buttonAcs} />
       </td>
       <td>UKB-101</td>
       <td>
@@ -15,13 +15,19 @@ export default function returnListItem() {
       <td>100</td>
       <td>5</td>
       <td>
-        <input type="number" />
+        <input type="number" disabled={buttonAcs} />
       </td>
       <td>
-        <button style={{ width: "max-content" }}>Select Serials</button>
+        <button style={{ width: "max-content" }} disabled={buttonAcs}>
+          Select Serials
+        </button>
       </td>
       <td>
-        <input type="text" placeholder="Enter return reason..." />
+        <input
+          type="text"
+          disabled={buttonAcs}
+          placeholder="Enter return reason..."
+        />
       </td>
       <td>0</td>
       <td>0</td>
@@ -30,10 +36,9 @@ export default function returnListItem() {
 
       <td>
         <svg
-          className="createNewReturn-table-delete-logo"
-          //   className={`createNewReturn-table-delete-logo ${
-          //     buttonAcs ? "disabled" : ""
-          //   }`}
+          className={`createNewReturn-table-delete-logo ${
+            buttonAcs ? "disabled" : ""
+          }`}
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 14 16"
         >
