@@ -44,6 +44,14 @@
   width: 100%;
   border: 2px solid rgba(217, 217, 217, 1);
 }
+.invoiceCRM-no-data {
+  text-align: center;
+  padding: 40px 0;
+  font-size: 16px;
+  font-weight: 500;
+  color: rgba(35, 78, 112, 1);
+}
+
 .invoiceCRM-search-box:focus {
   border: 2px solid rgba(35, 78, 112, 1);
 }
@@ -352,42 +360,6 @@
   transition: 0.3s ease-in-out;
   cursor: pointer;
 }
-.invoiceCRM-date-range {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  border: 2px solid rgba(35, 78, 112, 1);
-  border-radius: 10px;
-  padding: 7px 15px;
-  background: rgba(255, 255, 255, 1);
-  cursor: pointer;
-  font-size: 14px;
-  color: rgba(1, 19, 52, 1);
-}
-
-.invoiceCRM-date-range input[type="date"] {
-  border: none;
-  background: transparent;
-  color: rgba(1, 19, 52, 1);
-  font-size: 14px;
-  font-weight: 400;
-  cursor: pointer;
-  flex: 1;
-}
-
-.invoiceCRM-date-range input[type="date"]:focus {
-  outline: none;
-}
-
-.invoiceCRM-date-range span {
-  color: rgba(176, 176, 176, 1);
-  font-size: 14px;
-  font-weight: 400;
-  width: 20px;
-  text-align: center;
-  user-select: none;
-}
-
 .invoiceCRM-manage-btn:hover {
   transform: scale(1.035);
 }

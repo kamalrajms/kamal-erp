@@ -19,6 +19,8 @@ export default function userDashboard() {
   const [crmDropdown, setcrmDropdown] = useState(false);
   const [salesDropDown, setSalesDropDown] = useState(false);
   const [purchaseDropdown, setPurchaseDropdown] = useState(false);
+  const [financeDropdown, setFinanceDropdown] = useState(false);
+
 
   useEffect(() => {
     setCurrentPage(searchParam.get("tab") || "dashboard");
@@ -43,6 +45,8 @@ export default function userDashboard() {
         setSalesDropDown={setSalesDropDown}
         purchaseDropdown={purchaseDropdown}
         setPurchaseDropdown={setPurchaseDropdown}
+        financeDropdown={financeDropdown}
+        setFinanceDropdown={setFinanceDropdown}
       />
 
       {showSidebar && (
@@ -58,6 +62,8 @@ export default function userDashboard() {
           setSalesDropDown={setSalesDropDown}
           purchaseDropdown={purchaseDropdown}
           setPurchaseDropdown={setPurchaseDropdown}
+          financeDropdown={financeDropdown}
+          setFinanceDropdown={setFinanceDropdown}
         />
       )}
 

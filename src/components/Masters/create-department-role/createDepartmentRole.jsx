@@ -1,16 +1,24 @@
 import React, { useState, useEffect } from "react";
 import "./createDepartmentrole.css";
 import { toast } from "react-toastify";
+import axios from "axios";
 
 export default function createDepartmentRole({
-  setshowDepartmentRole,
-  setshowNewRole,
+  setShowDepartmentRole,
+  setShowNewRole,
+  setEditDepartmentRole,
   editDepartmentRole,
   editDept,
-  seteditRoleOnly,
+  setEditRoleOnly,
   setEditDept,
-  seteditRole,
+  setEditRole,
 }) {
+  const [isLoading, setIsLoading] = useState(false);
+  const [rolesLoading, setRolesLoading] = useState(false);
+  const persistedAuth = JSON.parse(localStorage.getItem("persist:root"));
+  const authState = JSON.parse(persistedAuth.auth || "{}");
+  const token = authState?.user?.token;
+
   const [createDepartmentForm, setcreateDepartmentForm] = useState({
     department_name: "",
     code: "",
@@ -18,182 +26,182 @@ export default function createDepartmentRole({
     description: "",
   });
 
-  const [rolesDescriptionAPI, setrolesDescriptionAPI] = useState({});
-  const [rolesDescription, setrolesDescription] = useState([]);
+  const [roles, setRoles] = useState([]);
+  const [branchList, setBranchList] = useState([]);
 
-  const rolesDescriptionFromAPI = {
-    rolesDescription: [
-      {
-        role: "Admin",
-        description:
-          " Lorem ipsum, dolor sit amet consectetur adipisicing elit Voluptates ipsum eius enim quia eveniet ab expedita officiis maxime accusantium, rem fugit voluptate ipsa saepe liber esse alias exercitationem aliquid consequuntur. Lorem ipsum, dolor sit amet consectetur adipisicing elit Voluptates ipsum eius enim quia eveniet ab expedita officiis maxime accusantium, rem fugi",
-        access: {
-          dashboard: {
-            fullAccess: true,
-            view: false,
-            create: false,
-            edit: false,
-            delete: false,
+  useEffect(() => {
+    const fetchBranches = async () => {
+      try {
+        const response = await axios.get("http://127.0.0.1:8000/api/branches/", {
+          headers: {
+            Authorization: `Token ${token}`,
+            "Content-Type": "application/json",
           },
-          task: {
-            fullAccess: false,
-            view: false,
-            create: false,
-            edit: false,
-            delete: false,
-          },
-          projectTracker: {
-            fullAccess: false,
-            view: false,
-            create: false,
-            edit: false,
-            delete: false,
-          },
-          onboarding: {
-            fullAccess: false,
-            view: false,
-            create: false,
-            edit: false,
-            delete: false,
-          },
-          attendance: {
-            fullAccess: false,
-            view: false,
-            create: false,
-            edit: false,
-            delete: false,
-          },
-        },
-      },
-      {
-        role: "Manager",
-        description:
-          " Lorem ipsum, dolor sit amet consectetur adipisicing elit Voluptates ipsum eius enim quia eveniet ab expedita officiis maxime accusantium, rem fugit voluptate ipsa saepe liber esse alias exercitationem aliquid consequuntur. Lorem ipsum, dolor sit amet consectetur adipisicing elit Voluptates ipsum eius enim quia eveniet ab expedita officiis maxime accusantium, rem fugi",
-        access: {
-          dashboard: {
-            fullAccess: false,
-            view: false,
-            create: false,
-            edit: false,
-            delete: false,
-          },
-          task: {
-            fullAccess: false,
-            view: false,
-            create: false,
-            edit: false,
-            delete: false,
-          },
-          projectTracker: {
-            fullAccess: false,
-            view: false,
-            create: false,
-            edit: false,
-            delete: false,
-          },
-          onboarding: {
-            fullAccess: false,
-            view: false,
-            create: false,
-            edit: false,
-            delete: false,
-          },
-          attendance: {
-            fullAccess: false,
-            view: false,
-            create: false,
-            edit: false,
-            delete: false,
-          },
-        },
-      },
-      {
-        role: "Employee",
-        description:
-          " Lorem ipsum, dolor sit amet consectetur adipisicing elit Voluptates ipsum eius enim quia eveniet ab expedita officiis maxime accusantium, rem fugit voluptate ipsa saepe liber esse alias exercitationem aliquid consequuntur. Lorem ipsum, dolor sit amet consectetur adipisicing elit Voluptates ipsum eius enim quia eveniet ab expedita officiis maxime accusantium, rem fugi",
-        access: {
-          dashboard: {
-            fullAccess: false,
-            view: false,
-            create: false,
-            edit: false,
-            delete: false,
-          },
-          task: {
-            fullAccess: false,
-            view: false,
-            create: false,
-            edit: false,
-            delete: false,
-          },
-          projectTracker: {
-            fullAccess: false,
-            view: false,
-            create: false,
-            edit: false,
-            delete: false,
-          },
-          onboarding: {
-            fullAccess: false,
-            view: false,
-            create: false,
-            edit: false,
-            delete: false,
-          },
-          attendance: {
-            fullAccess: false,
-            view: false,
-            create: false,
-            edit: false,
-            delete: false,
-          },
-        },
-      },
-    ],
-  };
+        });
+        setBranchList(response.data);
+      } catch (error) {
+        console.error("Error fetching branches:", error);
+        toast.error("Failed to load branches");
+      }
+    };
+
+    fetchBranches();
+  }, []);
 
   useEffect(() => {
     setcreateDepartmentForm(editDept);
   }, [editDept]);
 
   useEffect(() => {
-    setrolesDescriptionAPI(rolesDescriptionFromAPI);
-  }, []);
-  useEffect(() => {
-    if (Object.keys(rolesDescriptionAPI).length > 0) {
-      setrolesDescription(rolesDescriptionAPI.rolesDescription);
-    }
-  }, [rolesDescriptionAPI]);
-
-  const handleCreateDepartmentChange = (e) => {
-    setcreateDepartmentForm((prev) => {
-      return { ...prev, [e.target.id]: e.target.value };
+  if (editDept) {
+    // 1. Set the department form
+    setcreateDepartmentForm({
+      department_name: editDept.department_name || "",
+      code: editDept.code || "",
+      branch: typeof editDept.branch === "object" ? editDept.branch.id : editDept.branch || "",
+      description: editDept.description || "",
     });
+
+    // 2. Fetch roles for edit mode
+    if (editDept.id) {
+      fetchRoles(editDept.id);
+    }
+  } else {
+    // No editDept → fetch example roles for create mode
+    fetchExampleRoles();
+  }
+}, [editDept]);
+
+
+  const fetchRoles = async (departmentId) => {
+    setRolesLoading(true);
+    try {
+      const response = await axios.get(
+        `http://127.0.0.1:8000/api/roles/?department=${departmentId}`,
+        {
+          headers: {
+            Authorization: `Token ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      setRoles(response.data.roles);
+    } catch (error) {
+      console.error("Error fetching roles:", error);
+      toast.error("Failed to load roles");
+    } finally {
+      setRolesLoading(false);
+    }
   };
 
-  function deleteTask(ind) {
-    const okDel = window.confirm("Are you sure you want to delete this task?");
+  const fetchExampleRoles = async () => {
+    setRolesLoading(true);
+    try {
+      const response = await axios.get("http://127.0.0.1:8000/api/roles/?page=1&per_page=3", {
+        headers: {
+          Authorization: `Token ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+      setRoles(response.data.roles); // or response.data if not wrapped
+    } catch (error) {
+      console.error("Error fetching example roles:", error);
+      toast.error("Failed to load example roles");
+    } finally {
+      setRolesLoading(false);
+    }
+  };
+
+  const handleCreateDepartmentChange = (e) => {
+    const { id, value } = e.target;
+
+    setcreateDepartmentForm((prev) => ({
+      ...prev,
+      [id]: id === "branch" ? parseInt(value) : value,
+    }));
+  };
+
+  const deleteRole = async (roleId) => {
+    const okDel = window.confirm("Are you sure you want to delete this role?");
 
     if (okDel) {
-      setrolesDescriptionAPI((prev) => ({
-        ...prev,
-        rolesDescription: prev.rolesDescription.filter(
-          (_, index) => index !== ind
-        ),
-      }));
-      toast.success("Task deleted!");
-    }
-  }
+      try {
+        await axios.delete(`http://127.0.0.1:8000/api/roles/${roleId}/`, {
+          headers: {
+            Authorization: `Token ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
 
-  function handleNewDepartmentSubmit(e) {
+        // Refresh roles list
+        if (editDept?.id) {
+          fetchRoles(editDept.id);
+        }
+        toast.success("Role deleted successfully!");
+      } catch (error) {
+        console.error("Error deleting role:", error);
+        toast.error("Failed to delete role");
+      }
+    }
+  };
+
+  async function handleNewDepartmentSubmit(e) {
     e.preventDefault();
-    setcreateDepartmentForm({
-      department_name: "",
-      code: "",
-      branch: "",
-      description: "",
-    });
-    setshowDepartmentRole(false);
+    setIsLoading(true);
+
+    try {
+      if (!token) {
+        throw new Error("No authentication token found");
+      }
+
+      const config = {
+        headers: {
+          Authorization: `Token ${token}`,
+          "Content-Type": "application/json",
+        },
+      };
+
+      const url = "http://127.0.0.1:8000/api/departments/";
+      const data = createDepartmentForm;
+
+      // Check if we're editing or creating
+      const method = editDepartmentRole ? "put" : "post";
+
+      // If editing, we might need to include the ID in the URL
+      const finalUrl = editDepartmentRole && editDept.id
+        ? `${url}${editDept.id}/`
+        : url;
+
+      const res = await axios[method](finalUrl, data, config);
+
+      toast.success(
+        editDepartmentRole
+          ? "Department updated successfully!"
+          : "Department created successfully!"
+      );
+
+      // Reset form and close modal
+      setcreateDepartmentForm({
+        department_name: "",
+        code: "",
+        branch: "",
+        description: "",
+      });
+
+      setShowDepartmentRole(false);
+      setEditDept({});
+
+    } catch (err) {
+      console.error("Department operation failed", err.response?.data || err.message);
+      toast.error(
+        err.response?.data?.message ||
+        (editDepartmentRole
+          ? "Failed to update department."
+          : "Failed to create department.")
+      );
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   return (
@@ -205,7 +213,8 @@ export default function createDepartmentRole({
           viewBox="0 0 384 512"
           onClick={(e) => {
             e.preventDefault();
-            setshowDepartmentRole(false);
+            setEditDepartmentRole(false);
+            setShowDepartmentRole(false);
             setEditDept({});
           }}
         >
@@ -247,24 +256,27 @@ export default function createDepartmentRole({
               </div>
             </div>
             <div className="create-department-content">
-              <div
-                className="create-department-box"
-                id="create-department-box-fullwidth"
-              >
+              <div className="create-department-box" id="create-department-box-fullwidth">
                 <label htmlFor="branch">
                   Branch<sup>*</sup>
                 </label>
-                <input
+                <select
                   id="branch"
                   name="branch"
-                  type="text"
-                  placeholder="Enter Branch"
                   onChange={handleCreateDepartmentChange}
                   value={createDepartmentForm.branch}
                   required
-                />
+                >
+                  <option value="">Select a branch</option>
+                  {branchList.map((branch) => (
+                    <option key={branch.id} value={branch.id}>
+                      {branch.name}
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
+
             <div className="create-department-content">
               <div
                 className="create-department-box"
@@ -288,7 +300,7 @@ export default function createDepartmentRole({
                   <button
                     onClick={(e) => {
                       e.preventDefault();
-                      setshowNewRole(true);
+                      setShowNewRole(true);
                     }}
                   >
                     + Add New
@@ -307,12 +319,16 @@ export default function createDepartmentRole({
                     </tr>
                   </thead>
                   <tbody className="display-role-tablebody">
-                    {rolesDescription.length > 0 ? (
-                      rolesDescription.map((ele, ind) => (
-                        <tr key={ind}>
-                          <td id="display-rolename-width">{ele.role}</td>
+                    {rolesLoading ? (
+                      <tr>
+                        <td colSpan="3">Loading roles...</td>
+                      </tr>
+                    ) : roles.length > 0 ? (
+                      roles.map((role) => (
+                        <tr key={role.id}>
+                          <td id="display-rolename-width">{role.role}</td>
                           <td id="display-description-width">
-                            {ele.description}
+                            {role.description || "No description"}
                           </td>
                           <td id="display-action-width">
                             <svg
@@ -325,16 +341,16 @@ export default function createDepartmentRole({
                             <nav className="departmentrole-dot-container">
                               <div
                                 onClick={() => {
-                                  seteditRole(ele);
-                                  seteditRoleOnly(true);
-                                  setshowNewRole(true);
+                                  setEditRole(role);
+                                  setEditRoleOnly(true);
+                                  setShowNewRole(true);
                                 }}
                               >
                                 Edit
                               </div>
                               <div
                                 onClick={() => {
-                                  deleteTask(ind);
+                                  deleteRole(role.id);
                                 }}
                               >
                                 Delete
@@ -345,8 +361,8 @@ export default function createDepartmentRole({
                       ))
                     ) : (
                       <tr>
-                        <td>
-                          <p>No Data Found</p>
+                        <td colSpan="3">
+                          {editDepartmentRole ? "No roles found for this department" : "Save department to add roles"}
                         </td>
                       </tr>
                     )}
@@ -359,7 +375,8 @@ export default function createDepartmentRole({
                 <button
                   onClick={(e) => {
                     e.preventDefault();
-                    setshowDepartmentRole(false);
+                    setEditDepartmentRole(false);
+                    setShowDepartmentRole(false);
                   }}
                   className="create-department-cancel"
                 >

@@ -25,8 +25,11 @@ import DeliveryNoteCRM from "../../CRM/deliveryNote-crm/deliveryNoteCRM";
 import CreateNewDelivery from "../../CRM/create-new-delivery/createNewDelivery";
 import EditDelivery from "../../CRM/create-new-delivery/editDelivery";
 import InvoiceCRM from "../../CRM/invoice-crm/invoiceCRM";
+import InvoiceReturnCRM from "../../CRM/invoice-return/invoiceReturnCRM";
 import CreateNewInvoice from "../../CRM/create-new-invoice/createNewInvoice";
 import EditInvoice from "../../CRM/create-new-invoice/editInvoice";
+import CreateNewInvoiceReturn from "../../CRM/invoice-return/createNewInvoiceReturn";
+import EditInvoiceReturn from "../../CRM/invoice-return/editInvoiceReturn";
 import PurchaseOrder from "../../purchase/purchasr-order/purchaseOrder";
 import CreateNewPurchase from "../../purchase/create-new-purchaseOrder/createNewPurchase";
 import EditPurchase from "../../purchase/create-new-purchaseOrder/editPurchase";
@@ -35,6 +38,8 @@ import CreateNewStockReceipt from "../../purchase/create-new-stockReceipt/create
 import EditStockReceipt from "../../purchase/create-new-stockReceipt/editStockReceipt";
 import StockReturn from "../../purchase/stock-return/stockReturn";
 import CreateNewStockReturn from "../../purchase/create-new-stockReturn/createNewStockReturn";
+import CreditNote from "../../Finance/credit-note/creditNote";
+import CreditNoteDetails from "../../Finance/credit-note/creditNote-details";
 
 export default function body({
   expanded,
@@ -79,7 +84,7 @@ export default function body({
       <div className="header">
         <div className="header-left">
           <svg
-            className={
+            className={   
               expanded ? "right-arrow right-arrow-rot" : "right-arrow "
             }
             onClick={() => setexpanded(!expanded)}
@@ -183,10 +188,20 @@ export default function body({
           <EditDelivery />
         ) : currentPage == "invoiceCRM" ? (
           <InvoiceCRM setCurrentPage={setCurrentPage} />
+        ) : currentPage == "invoiceReturnCRM" ? (
+          <InvoiceReturnCRM setCurrentPage={setCurrentPage} />
         ) : currentPage == "createNewInvoice" ? (
           <CreateNewInvoice />
         ) : currentPage == "editInvoice" ? (
           <EditInvoice />
+        )  : currentPage == "createNewInvoiceReturn" ? (
+          <CreateNewInvoiceReturn />
+        ) : currentPage == "editInvoiceReturn" ? (
+          <EditInvoiceReturn />
+        )  : currentPage == "creditNote" ? (
+          <CreditNote setCurrentPage={setCurrentPage}  />
+        ) : currentPage == "viewCreditNote" ? (
+          <CreditNoteDetails />
         ) : currentPage == "purchaseOrder" ? (
           <PurchaseOrder setCurrentPage={setCurrentPage} />
         ) : currentPage == "createNewPurchase" ? (

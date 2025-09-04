@@ -3,127 +3,131 @@ import "./departmentRole.css";
 import CreateDepartmentRole from "../create-department-role/createDepartmentRole";
 import CreateNewRole from "../create-newrole/createNewRole";
 import { toast } from "react-toastify";
-import { use } from "react";
 
-export default function departmentRole() {
-  const [departmentAPI, setdepartmentAPI] = useState({});
-  const [departmentTableData, setdepartmentTableData] = useState([]);
-  const [departmentCurrentPage, setdepartmentCurrentPage] = useState(1); // Default: Page 1
+export default function DepartmentRole() {
+  const [departmentTableData, setDepartmentTableData] = useState([]);
+  const [departmentCurrentPage, setDepartmentCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const departmentRowsPerPage = 5;
 
-  const [showNewRole, setshowNewRole] = useState(false);
-  const [editRoleOnly, seteditRoleOnly] = useState(false);
-  const [editRole, seteditRole] = useState({});
+  const [showNewRole, setShowNewRole] = useState(false);
+  const [editRoleOnly, setEditRoleOnly] = useState(false);
+  const [editRole, setEditRole] = useState({});
 
-  const [showDepartmentRole, setshowDepartmentRole] = useState(false);
+  const [showDepartmentRole, setShowDepartmentRole] = useState(false);
   const [editDepartmentRole, setEditDepartmentRole] = useState(false);
   const [editDept, setEditDept] = useState({});
+  const [loading, setLoading] = useState(true);
 
-  const departmentFromAPI = {
-    departmentTableData: [
-      {
-        code: "#STA123",
-        department_name: "Sales",
-        description:
-          " Lorem ipsum, dolor sit amet consectetur adipisicing elit Voluptates ipsum eius enim quia eveniet ab expedita officiis maxime accusantium, rem fugit voluptate ipsa saepe liber esse alias exercitationem aliquid consequuntur.",
-      },
-      {
-        code: "#STA122",
-        department_name: "Purchase",
-        description:
-          " Lorem ipsum, dolor sit amet consectetur adipisicing elit Voluptates ipsum eius enim quia eveniet ab expedita officiis maxime accusantium, rem fugit voluptate ipsa saepe liber esse alias exercitationem aliquid consequuntur.",
-      },
-      {
-        code: "#STA124",
-        department_name: "HR",
-        description:
-          " Lorem ipsum, dolor sit amet consectetur adipisicing elit Voluptates ipsum eius enim quia eveniet ab expedita officiis maxime accusantium, rem fugit voluptate ipsa saepe liber esse alias exercitationem aliquid consequuntur.",
-      },
-      {
-        code: "#STA125",
-        department_name: "analist",
-        description:
-          " Lorem ipsum, dolor sit amet consectetur adipisicing elit Voluptates ipsum eius enim quia eveniet ab expedita officiis maxime accusantium, rem fugit voluptate ipsa saepe liber esse alias exercitationem aliquid consequuntur.",
-      },
-      {
-        code: "#STA122",
-        department_name: "digital",
-        description:
-          " Lorem ipsum, dolor sit amet consectetur adipisicing elit Voluptates ipsum eius enim quia eveniet ab expedita officiis maxime accusantium, rem fugit voluptate ipsa saepe liber esse alias exercitationem aliquid consequuntur.",
-      },
-      {
-        code: "#STA124",
-        department_name: "marketing",
-        description:
-          " Lorem ipsum, dolor sit amet consectetur adipisicing elit Voluptates ipsum eius enim quia eveniet ab expedita officiis maxime accusantium, rem fugit voluptate ipsa saepe liber esse alias exercitationem aliquid consequuntur.",
-      },
-      {
-        code: "#STA124",
-        department_name: "maintaines",
-        description:
-          " Lorem ipsum, dolor sit amet consectetur adipisicing elit Voluptates ipsum eius enim quia eveniet ab expedita officiis maxime accusantium, rem fugit voluptate ipsa saepe liber esse alias exercitationem aliquid consequuntur.",
-      },
-    ],
-  };
+  const fetchDepartments = async (page = 1) => {
+  try {
+    const persistedAuth = JSON.parse(localStorage.getItem("persist:root") || "{}");
+    const authState = JSON.parse(persistedAuth.auth || "{}");
+    const token = authState?.user?.token;
 
-  useEffect(() => {
-    setdepartmentAPI(departmentFromAPI);
-  }, []);
+    const response = await fetch(`http://127.0.0.1:8000/api/departments/?page=${page}`, {
+      headers: {
+        Authorization: `Token ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
 
-  useEffect(() => {
-    if (Object.keys(departmentAPI).length > 0) {
-      setdepartmentTableData(departmentAPI.departmentTableData);
+    const contentType = response.headers.get("Content-Type");
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Non-OK response text:", errorText);
+      throw new Error("Unauthorized or failed");
     }
-  }, [departmentAPI]);
 
-  // Calculate total pages
-  const totalPages = Math.ceil(
-    departmentTableData.length / departmentRowsPerPage
-  );
+    if (!contentType || !contentType.includes("application/json")) {
+      const rawText = await response.text();
+      console.error("Expected JSON, got:", rawText);
+      throw new Error("Invalid response format");
+    }
 
-  // Get data for current page
-  const currentData = departmentTableData.slice(
-    (departmentCurrentPage - 1) * departmentRowsPerPage,
-    departmentCurrentPage * departmentRowsPerPage
-  );
+    const data = await response.json();
+    console.log("Fetched department data:", data);
 
-  // Handle next page
+    if (!Array.isArray(data.departments)) {
+      throw new Error("Invalid department data format");
+    }
+
+    setDepartmentTableData(data.departments);
+    setTotalPages(data.total_pages);
+    setDepartmentCurrentPage(data.current_page);
+  } catch (error) {
+    toast.error("Failed to fetch departments");
+    console.error("Fetch error:", error.message);
+    setLoading(false);
+  }
+};
+
+// 👇 Now this works
+useEffect(() => {
+  fetchDepartments();
+}, []);
+
+  const currentData = departmentTableData || [];
+
   const handleNext = () => {
-    if (departmentCurrentPage < totalPages) {
-      setdepartmentCurrentPage((prevPage) => prevPage + 1);
-    }
-  };
+  if (departmentCurrentPage < totalPages) {
+    const nextPage = departmentCurrentPage + 1;
+    setDepartmentCurrentPage(nextPage);
+    fetchDepartments(nextPage);
+  }
+};
 
-  // Handle previous page
-  const handlePrev = () => {
-    if (departmentCurrentPage > 1) {
-      setdepartmentCurrentPage((prevPage) => prevPage - 1);
-    }
-  };
+const handlePrev = () => {
+  if (departmentCurrentPage > 1) {
+    const prevPage = departmentCurrentPage - 1;
+    setDepartmentCurrentPage(prevPage);
+    fetchDepartments(prevPage);
+  }
+};
 
   const showEditDepartmentRole = (code) => {
-    setEditDept(
-      currentData.find((ele) => {
-        return ele.code === code;
-      })
-    );
-    setEditDepartmentRole(true);
+    const departmentToEdit = departmentTableData.find((ele) => ele.code === code);
+    if (departmentToEdit) {
+      setEditDept(departmentToEdit);
+      setEditDepartmentRole(true);
+      setShowDepartmentRole(false);
+    }
   };
 
-  // delete functionality
-  function deleteTask(ind) {
-    const okDel = window.confirm("Are you sure you want to delete this task?");
+  const handleCloseModal = () => {
+    setEditDepartmentRole(false);
+    setShowDepartmentRole(false);
+    setEditDept({});
+  };
 
-    if (okDel) {
-      setdepartmentAPI((prev) => ({
-        ...prev,
-        departmentTableData: prev.departmentTableData.filter(
-          (_, index) => index !== ind
-        ),
-      }));
-      toast.success("Task deleted!");
+  const deleteTask = async (id) => {
+    const okDel = window.confirm("Are you sure you want to delete this department?");
+    if (!okDel) return;
+
+    try {
+      const persistedAuth = JSON.parse(localStorage.getItem("persist:root") || "{}");
+      const authState = JSON.parse(persistedAuth.auth || "{}");
+      const token = authState?.user?.token;
+
+      const response = await fetch(`http://127.0.0.1:8000/api/departments/${id}/`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Token ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        setDepartmentTableData(prev => prev.filter(dept => dept.id !== id));
+        toast.success("Department deleted successfully");
+      } else {
+        throw new Error("Failed to delete department");
+      }
+    } catch (error) {
+      toast.error("Error deleting department");
+      console.error("Delete error:", error);
     }
-  }
+  };
 
   return (
     <>
@@ -131,44 +135,33 @@ export default function departmentRole() {
         <div className="createNewRole-btn">
           <CreateNewRole
             editRoleOnly={editRoleOnly}
-            setshowNewRole={setshowNewRole}
+            setShowNewRole={setShowNewRole}
             editRole={editRole}
-            seteditRole={seteditRole}
-            seteditRoleOnly={seteditRoleOnly}
+            setEditRole={setEditRole}
+            setEditRoleOnly={setEditRoleOnly}
           />
         </div>
       ) : (
         <>
-          {showDepartmentRole && (
+          {(showDepartmentRole || editDepartmentRole) && (
             <div className="create-department-role-btn">
               <CreateDepartmentRole
-                seteditRole={seteditRole}
-                seteditRoleOnly={seteditRoleOnly}
+                setEditRole={setEditRole}
+                setEditRoleOnly={setEditRoleOnly}
                 editDept={editDept}
                 editDepartmentRole={editDepartmentRole}
                 setEditDept={setEditDept}
-                setshowDepartmentRole={setshowDepartmentRole}
-                setshowNewRole={setshowNewRole}
-              />
-            </div>
-          )}
-          {editDepartmentRole && (
-            <div className="create-department-role-btn">
-              <CreateDepartmentRole
-                seteditRole={seteditRole}
-                seteditRoleOnly={seteditRoleOnly}
-                editDept={editDept}
-                editDepartmentRole={editDepartmentRole}
-                setEditDept={setEditDept}
-                setshowDepartmentRole={setEditDepartmentRole}
-                setshowNewRole={setshowNewRole}
+                setShowDepartmentRole={setShowDepartmentRole}
+                setEditDepartmentRole={setEditDepartmentRole}
+                setShowNewRole={setShowNewRole}
+                setDepartmentTableData={setDepartmentTableData}
+                onClose={handleCloseModal}
               />
             </div>
           )}
           <div
-            className={`department-role-container ${
-              (showDepartmentRole || editDepartmentRole) && "blur-department"
-            }`}
+            className={`department-role-container ${(showDepartmentRole || editDepartmentRole) && "blur-department"
+              }`}
           >
             <p>Department & Roles</p>
             <div className="department-header">
@@ -188,7 +181,11 @@ export default function departmentRole() {
                     </svg>
                   </label>
                 </div>
-                <button onClick={() => setshowDepartmentRole(true)}>
+                <button onClick={() => {
+                  setShowDepartmentRole(true);
+                  setEditDepartmentRole(false);
+                  setEditDept({});
+                }}>
                   + Create New
                 </button>
               </div>
@@ -230,7 +227,7 @@ export default function departmentRole() {
                             </div>
                             <div
                               onClick={() => {
-                                deleteTask(ind);
+                                deleteTask(ele.id);
                               }}
                             >
                               Delete
@@ -241,7 +238,9 @@ export default function departmentRole() {
                     ))
                   ) : (
                     <tr>
-                      <p>No Data Fond</p>
+                      <td colSpan="4" style={{ textAlign: 'center' }}>
+                        No Data Found
+                      </td>
                     </tr>
                   )}
                 </tbody>
@@ -260,8 +259,7 @@ export default function departmentRole() {
                   Prev
                 </button>
                 <nav className="num-page-department">
-                  {" "}
-                  Page {departmentCurrentPage} of {totalPages}{" "}
+                  Page {departmentCurrentPage} of {totalPages}
                 </nav>
                 <button
                   className="department-btn"

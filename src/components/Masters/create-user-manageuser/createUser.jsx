@@ -1,26 +1,17 @@
 import React, { useState, useEffect } from "react";
 import "./createUser.css";
+import { toast } from "react-toastify";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
-export default function createUser({
+export default function CreateUser({
   showCreateUser,
   setshowCreateUser,
   editCreateUser,
   edituser,
   setedituser,
 }) {
-  const [ApiManageUser, setApiManageUser] = useState({});
-  const [branch, setBranch] = useState([]);
-  const manageUserFormAi = {
-    branch: ["Chennai", "Mumbai"],
-  };
-  useEffect(() => {
-    setApiManageUser(manageUserFormAi);
-  }, []);
-  useEffect(() => {
-    if (Object.keys(ApiManageUser).length > 0) {
-      setBranch(ApiManageUser.branch);
-    }
-  }, [ApiManageUser]);
+  const navigate = useNavigate();
   const [createUserForm, setcreateUserForm] = useState({
     first_name: "",
     last_name: "",
@@ -33,38 +24,197 @@ export default function createUser({
     available_branches: "",
     employee_id: "",
   });
+  const [branchList, setBranchList] = useState([]);
+  const [departmentList, setDepartmentList] = useState([]);
+  const [roleList, setRoleList] = useState([]);
+  const [userList, setUserList] = useState([]);
+  const [filteredRoles, setFilteredRoles] = useState([]);
+
+  // Pre-fill form in edit mode
   useEffect(() => {
-    setcreateUserForm((prev) => {
-      return { ...prev, ...edituser };
-    });
-  }, [edituser]);
+    if (editCreateUser && edituser && Object.keys(edituser).length > 0) {
+      console.log("Pre-filling form with edituser:", edituser);
+      setcreateUserForm({
+        first_name: edituser.first_name || "",
+        last_name: edituser.last_name || "",
+        email: edituser.email || "",
+        contact_number: edituser.profile?.contact_number || "",
+        employee_id: edituser.profile?.employee_id || "",
+        branch: edituser.profile?.branch?.id || edituser.profile?.branch || "",
+        department: edituser.profile?.department?.id || edituser.profile?.department || "",
+        role: edituser.profile?.role.id || edituser.profile?.role || "",
+        reporting_to: edituser.profile?.reporting_to || "",
+        available_branches: Array.isArray(edituser.profile?.available_branches)
+          ? edituser.profile.available_branches.join(", ")
+          : edituser.profile?.available_branches || "",
+      });
+    } else {
+      setcreateUserForm({
+        first_name: "",
+        last_name: "",
+        email: "",
+        contact_number: "",
+        branch: "",
+        department: "",
+        role: "",
+        reporting_to: "",
+        available_branches: "",
+        employee_id: "",
+      });
+    }
+  }, [edituser, editCreateUser]);
 
-  const handleCreateUserChange = (e) => {
-    setcreateUserForm((prev) => {
-      return { ...prev, [e.target.id]: e.target.value };
-    });
-  };
-  console.log(createUserForm);
-
-  function handleCreateUserSubmit(e) {
-    e.preventDefault();
-    setcreateUserForm({
-      first_name: "",
-      last_name: "",
-      email: "",
-      contact_number: "",
-      branch: "",
-      department: "",
-      role: "",
-      reporting_to: "",
-      available_branches: "",
-      employee_id: "",
-    });
-    setshowCreateUser(false);
+  // Fetch branches, departments, roles, and users
+  useEffect(() => {
+  const persistedAuth = JSON.parse(localStorage.getItem("persist:root") || "{}");
+  const authState = JSON.parse(persistedAuth.auth || "{}");
+  const token = authState?.user?.token;
+  if (!token) {
+    toast.error("No authentication token found. Please log in.");
+    return;
   }
+  const fetchData = async () => {
+    try {
+      const [branchRes, deptRes, roleRes, userRes] = await Promise.all([
+        axios.get("http://127.0.0.1:8000/api/branches/", {
+          headers: { Authorization: `Token ${token}` },
+        }),
+        axios.get("http://127.0.0.1:8000/api/departments/", {
+          headers: { Authorization: `Token ${token}` },
+        }),
+        axios.get(`http://127.0.0.1:8000/api/roles/${createUserForm.department ? `?department=${createUserForm.department}` : ''}`, {
+          headers: { Authorization: `Token ${token}` },
+        }),
+        axios.get("http://127.0.0.1:8000/api/users/", {
+          headers: { Authorization: `Token ${token}` },
+        }),
+      ]);
+      console.log("Raw Roles API Response:", roleRes.data);
+      setBranchList(branchRes.data || []);
+      setDepartmentList(deptRes.data.departments || []);
+      setRoleList(Array.isArray(roleRes.data) ? roleRes.data : (roleRes.data.roles || []));
+      // ... rest of the code
+    } catch (err) {
+      console.error("Error fetching data:", err);
+      toast.error("Failed to load dropdown data");
+      setUserList([]);
+    }
+  };
+  fetchData();
+}, [createUserForm.department]);
+
+  // Filter roles based on selected department
+useEffect(() => {
+  if (createUserForm.department && roleList.length > 0) {
+    const deptId = Number(createUserForm.department);
+    console.log("Selected department ID:", deptId);
+    console.log("All role department values:", roleList.map(r => r.department?.id ?? r.department ?? r.department_id));
+    console.log("Role objects for debugging:", roleList);
+
+    const rolesForDept = roleList.filter(
+      (role) =>
+        (typeof role.department === "object" && role.department?.id === deptId) ||
+        (typeof role.department === "number" && role.department === deptId) ||
+        (role.department_id === deptId) // Fallback to department_id
+    );
+    console.log("Filtered roles:", rolesForDept);
+    setFilteredRoles(rolesForDept);
+  } else {
+    setFilteredRoles([]);
+  }
+}, [createUserForm.department, roleList]);
+
+  const handleFormChange = (e) => {
+    const { id, value } = e.target;
+    setcreateUserForm((prev) => ({ ...prev, [id]: value }));
+
+    if (id === "department") {
+      setcreateUserForm((prev) => ({ ...prev, role: "" }));
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const persistedAuth = JSON.parse(localStorage.getItem("persist:root") || "{}");
+    const authState = JSON.parse(persistedAuth.auth || "{}");
+    const token = authState?.user?.token;
+
+    if (!token) {
+      toast.error("No authentication token found. Please log in.");
+      return;
+    }
+
+    const formData = {
+      first_name: createUserForm.first_name,
+      last_name: createUserForm.last_name || "",
+      profile: {
+        contact_number: createUserForm.contact_number || "",
+        branch: createUserForm.branch || null,
+        department: createUserForm.department || null,
+        role: createUserForm.role || null,
+        reporting_to: createUserForm.reporting_to || null,
+        available_branches: createUserForm.available_branches
+          .split(",")
+          .map((item) => item.trim())
+          .filter(Boolean),
+      },
+    };
+
+    // Only include email and employee_id for create operations
+    if (!editCreateUser) {
+      formData.email = createUserForm.email;
+      formData.profile.employee_id = createUserForm.employee_id;
+    }
+
+    try {
+      const config = {
+        headers: {
+          Authorization: `Token ${token}`,
+          "Content-Type": "application/json",
+        },
+      };
+
+      let response;
+      if (editCreateUser && edituser.id) {
+        response = await axios.put(
+          `http://127.0.0.1:8000/api/users/${edituser.id}/`,
+          formData,
+          config
+        );
+        toast.success("User updated successfully");
+      } else {
+        formData.password = "defaultPassword123"; // Replace with secure password handling
+        response = await axios.post("http://127.0.0.1:8000/api/users/", formData, config);
+        toast.success("User created successfully");
+      }
+
+      console.log("Response:", response.data);
+      setcreateUserForm({
+        first_name: "",
+        last_name: "",
+        email: "",
+        contact_number: "",
+        branch: "",
+        department: "",
+        role: "",
+        reporting_to: "",
+        available_branches: "",
+        employee_id: "",
+      });
+      setedituser({});
+      setshowCreateUser(false);
+      navigate("/?tab=manageUsers");
+    } catch (error) {
+      console.error("Error saving user:", error);
+      const errorMessage = error.response?.data
+        ? JSON.stringify(error.response.data)
+        : error.message;
+      toast.error(`Failed to save user: ${errorMessage}`);
+    }
+  };
 
   return (
-    <div className="createuser-container">
+    <div className={`createuser-container ${showCreateUser ? "block" : "hidden"}`}>
       <svg
         className="x-logo-createuser"
         xmlns="http://www.w3.org/2000/svg"
@@ -80,7 +230,7 @@ export default function createUser({
         <p>{editCreateUser ? "Edit" : "Create New"} Branch Users</p>
       </div>
       <div className="createuser-body">
-        <form onSubmit={handleCreateUserSubmit}>
+        <form onSubmit={handleSubmit}>
           <div className="createuser-content">
             <div className="createuser-box">
               <label htmlFor="first_name">
@@ -92,7 +242,7 @@ export default function createUser({
                 type="text"
                 placeholder="First Name"
                 value={createUserForm.first_name}
-                onChange={handleCreateUserChange}
+                onChange={handleFormChange}
                 required
               />
             </div>
@@ -106,7 +256,7 @@ export default function createUser({
                 type="text"
                 placeholder="Last Name"
                 value={createUserForm.last_name}
-                onChange={handleCreateUserChange}
+                onChange={handleFormChange}
                 required
               />
             </div>
@@ -122,8 +272,9 @@ export default function createUser({
                 type="email"
                 placeholder="stackly@gmail.com"
                 value={createUserForm.email}
-                onChange={handleCreateUserChange}
+                onChange={handleFormChange}
                 required
+                disabled={editCreateUser}
               />
             </div>
             <div className="createuser-box">
@@ -131,11 +282,10 @@ export default function createUser({
               <input
                 id="contact_number"
                 name="contact_number"
-                className="increment-decrement-createuser"
                 type="number"
                 placeholder="9134554123"
                 value={createUserForm.contact_number}
-                onChange={handleCreateUserChange}
+                onChange={handleFormChange}
               />
             </div>
           </div>
@@ -144,20 +294,18 @@ export default function createUser({
               <label htmlFor="branch">
                 Branch<sup>*</sup>
               </label>
-
               <select
                 id="branch"
                 name="branch"
                 value={createUserForm.branch}
-                onChange={handleCreateUserChange}
+                onChange={handleFormChange}
+                className="candidate-input"
                 required
               >
-                <option value="" style={{ color: "hsl(0, 0%, 80%)" }}>
-                  Select Branch
-                </option>
-                {branch.map((ele, ind) => (
-                  <option key={{ ind }} value={ele}>
-                    {ele}
+                <option value="">Select a branch</option>
+                {branchList.map((branch) => (
+                  <option key={branch.id} value={branch.id}>
+                    {branch.name}
                   </option>
                 ))}
               </select>
@@ -168,47 +316,41 @@ export default function createUser({
               </label>
               <select
                 id="department"
-                onChange={handleCreateUserChange}
-                value={createUserForm.department}
                 name="department"
+                value={createUserForm.department}
+                onChange={handleFormChange}
+                className="candidate-input"
                 required
               >
-                <option value="" style={{ color: "hsl(0, 0%, 80%)" }}>
-                  Select Department
-                </option>
-                <option value="UI">UI</option>
-                <option value="Sales">Sales</option>
-                <option value="Engineering">Engineering</option>
-                <option value="Admin">Admin</option>
-                <option value="Technicians">Technicians</option>
-                <option value="HR">HR</option>
-                <option value="Purchase">Purchase</option>
-                <option value="Finance">Finance</option>
-                <option value="Marketing">Marketing</option>
-                <option value="Operations">Operations</option>
+                <option value="">Select Department</option>
+                {departmentList.map((dept) => (
+                  <option key={dept.id} value={dept.id}>
+                    {dept.department_name}
+                  </option>
+                ))}
               </select>
             </div>
           </div>
           <div className="createuser-content">
             <div className="createuser-box">
               <label htmlFor="role">
-                role<sup>*</sup>
+                Role<sup>*</sup>
               </label>
               <select
-                id="role"
-                value={createUserForm.role}
-                onChange={handleCreateUserChange}
-                name="role"
-                required
-              >
-                <option value="" style={{ color: "hsl(0, 0%, 80%)" }}>
-                  Select Role
-                </option>
-                <option value="Super Admin">Super Admin</option>
-                <option value="Admin">Admin</option>
-                <option value="Manager">Manager</option>
-                <option value="User Employee">User Employee</option>
-              </select>
+                  id="role"
+                  name="desigrolenation"
+                  value={createUserForm.role}
+                  onChange={handleFormChange}
+                  className="candidate-input"
+                  required
+                >
+                  <option value="">Select Designation</option>
+                  {filteredRoles.map((role) => (
+                    <option key={role.id} value={role.id}>
+                      {role.role}
+                    </option>
+                  ))}
+                </select>
             </div>
             <div className="createuser-box">
               <label htmlFor="reporting_to">Reporting To</label>
@@ -218,10 +360,12 @@ export default function createUser({
                 type="text"
                 placeholder="9134554123"
                 value={createUserForm.reporting_to}
-                onChange={handleCreateUserChange}
+                onChange={handleFormChange}
               />
             </div>
           </div>
+          
+            
           <div className="createuser-content">
             <div className="createuser-box">
               <label htmlFor="available_branches">Available Branches</label>
@@ -229,9 +373,9 @@ export default function createUser({
                 id="available_branches"
                 name="available_branches"
                 type="text"
-                placeholder="9134554123"
+                placeholder="e.g., 1,2"
                 value={createUserForm.available_branches}
-                onChange={handleCreateUserChange}
+                onChange={handleFormChange}
               />
             </div>
             <div className="createuser-box">
@@ -241,15 +385,20 @@ export default function createUser({
                 name="employee_id"
                 type="text"
                 placeholder="Enter Employee ID"
-                onChange={handleCreateUserChange}
                 value={createUserForm.employee_id}
+                onChange={handleFormChange}
+                disabled={editCreateUser}
               />
             </div>
           </div>
           <div className="createuser-submit-container">
             <nav>
               <button
-                onClick={() => setshowCreateUser(false)}
+                type="button"
+                onClick={() => {
+                  setshowCreateUser(false);
+                  setedituser({});
+                }}
                 className="createuser-cancel"
               >
                 Cancel

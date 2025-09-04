@@ -1,21 +1,26 @@
-import React, { useState } from "react";
+
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 import "./addNewCandidate.css";
 import { useNavigate, useParams } from "react-router-dom";
+import { toast } from "react-toastify";
 
-export default function addNewCandidate() {
-  const BackToOnboarding = useNavigate();
-  const [file, setfile] = useState([]);
-
+export default function AddNewCandidate() {
+  const navigate = useNavigate();
   const { candidateId } = useParams();
-  console.log(candidateId);
+  const [file, setFile] = useState([]);
+  const [error, setError] = useState(null);
+  const [departmentList, setDepartmentList] = useState([]);
+  const [roleList, setRoleList] = useState([]);
+  const [filteredRoles, setFilteredRoles] = useState([]);
+  const [branchList, setBranchList] = useState([]);
 
   const [formData, setFormData] = useState({
-    basics: "",
-    hra: "",
     employee_code: "",
     first_name: "",
     last_name: "",
     department: "",
+    branch: "",
     designation: "",
     gender: "",
     joining_date: "",
@@ -51,107 +56,353 @@ export default function addNewCandidate() {
     asset_type: "",
     laptop_company_name: "",
     asset_id: "",
-    upload_documents: "",
   });
-  console.log(file);
+
+  // Fetch candidate data for edit mode
+  useEffect(() => {
+    if (candidateId) {
+      const fetchCandidate = async () => {
+        try {
+          const persistedAuth = JSON.parse(localStorage.getItem("persist:root") || "{}");
+          const authState = JSON.parse(persistedAuth.auth || "{}");
+          const token = authState?.user?.token;
+
+          if (!token) {
+            setError("No token found. Please log in.");
+            return;
+          }
+
+          const response = await axios.get(
+            `http://127.0.0.1:8000/api/onboarding/${candidateId}/`,
+            {
+              headers: {
+                Authorization: `Token ${token}`,
+                "Content-Type": "application/json",
+              },
+            }
+          );
+          const data = response.data;
+          const formattedData = {
+            ...data,
+            basics: data.basics ? putComma(data.basics) : "",
+            hra: data.hra ? putComma(data.hra) : "",
+            conveyance_allowance: data.conveyance_allowance ? putComma(data.conveyance_allowance) : "",
+            medical_allowance: data.medical_allowance ? putComma(data.medical_allowance) : "",
+            other_allowances: data.other_allowances ? putComma(data.other_allowances) : "",
+            bonus: data.bonus ? putComma(data.bonus) : "",
+            taxes: data.taxes ? putComma(data.taxes) : "",
+            pf: data.pf ? putComma(data.pf) : "",
+            esi: data.esi ? putComma(data.esi) : "",
+            gross_salary: data.gross_salary ? putComma(data.gross_salary) : "",
+            net_salary: data.net_salary ? putComma(data.net_salary) : "",
+          };
+          delete formattedData.upload_documents;
+          setFormData(formattedData);
+
+          if (data.upload_documents) {
+            setFile(
+              data.upload_documents.split(",").map((path) => ({
+                name: path.split("/").pop(),
+                path,
+              }))
+            );
+          }
+        } catch (err) {
+          setError(err.response?.data?.error || "Failed to fetch candidate data");
+        }
+      };
+      fetchCandidate();
+    }
+  }, [candidateId]);
 
   const putComma = (val) => {
-    let value = val.replace(/[^0-9.]/g, "");
-    value = new Intl.NumberFormat("en-IN", { maximumFractionDigits: 2 }).format(
-      value
-    );
+    if (!val) return "";
+    let value = val.toString().replace(/[^0-9.]/g, "");
+    value = new Intl.NumberFormat("en-IN", { maximumFractionDigits: 2 }).format(value);
     return value;
   };
 
+  const cleanNumericValue = (val) => {
+    if (!val) return "";
+    return val.replace(/,/g, "");
+  };
+
+  // Fetch departments and branches
+  useEffect(() => {
+    const fetchDepartmentsAndBranches = async () => {
+      try {
+        const persistedAuth = JSON.parse(localStorage.getItem("persist:root") || "{}");
+        const authState = JSON.parse(persistedAuth.auth || "{}");
+        const token = authState?.user?.token;
+
+        if (!token) {
+          toast.error("Auth token not found");
+          return;
+        }
+
+        // Fetch paginated departments
+        const allDepartments = [];
+        let page = 1;
+        let totalPages = 1;
+
+        do {
+          const response = await axios.get(
+            `http://127.0.0.1:8000/api/departments/?page=${page}`,
+            {
+              headers: {
+                Authorization: `Token ${token}`,
+                "Content-Type": "application/json",
+              },
+            }
+          );
+
+          const data = response.data;
+          allDepartments.push(...(data.departments || []));
+          totalPages = data.total_pages || 1;
+          page += 1;
+        } while (page <= totalPages);
+
+        // Fetch branches
+        const branchResponse = await axios.get("http://127.0.0.1:8000/api/branches/", {
+          headers: {
+            Authorization: `Token ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
+
+        setDepartmentList(allDepartments);
+        setBranchList(branchResponse.data || []);
+      } catch (error) {
+        console.error("Error fetching departments or branches:", error);
+        toast.error("Failed to load departments or branches");
+      }
+    };
+
+    fetchDepartmentsAndBranches();
+  }, []);
+
+  // Fetch roles when department changes
+  useEffect(() => {
+    const fetchRoles = async () => {
+      const persistedAuth = JSON.parse(localStorage.getItem("persist:root") || "{}");
+      const authState = JSON.parse(persistedAuth.auth || "{}");
+      const token = authState?.user?.token;
+
+      if (!token) {
+        toast.error("No authentication token found. Please log in.");
+        return;
+      }
+
+      if (!formData.department) {
+        setRoleList([]);
+        setFilteredRoles([]);
+        return;
+      }
+
+      try {
+        const roleResponse = await axios.get(
+          `http://127.0.0.1:8000/api/roles/?department=${formData.department}`,
+          {
+            headers: {
+              Authorization: `Token ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        console.log("Raw Roles API Response:", roleResponse.data);
+        const roles = Array.isArray(roleResponse.data) ? roleResponse.data : (roleResponse.data.roles || []);
+        setRoleList(roles);
+        setFilteredRoles(roles); // Roles are already filtered by the API
+      } catch (error) {
+        console.error("Error fetching roles:", error);
+        toast.error("Failed to load roles");
+        setRoleList([]);
+        setFilteredRoles([]);
+      }
+    };
+
+    fetchRoles();
+  }, [formData.department]);
+
   const handleFormChange = (e) => {
+    const { id, value } = e.target;
+
     if (
-      e.target.id === "basics" ||
-      e.target.id === "hra" ||
-      e.target.id === "conveyance_allowance" ||
-      e.target.id === "medical_allowance" ||
-      e.target.id === "other_allowances" ||
-      e.target.id === "bonus" ||
-      e.target.id === "gross_salary" ||
-      e.target.id === "net_salary" ||
-      e.target.id === "taxes" ||
-      e.target.id === "pf" ||
-      e.target.id === "esi"
+      [
+        "basics",
+        "hra",
+        "conveyance_allowance",
+        "medical_allowance",
+        "other_allowances",
+        "bonus",
+        "taxes",
+        "pf",
+        "esi",
+        "gross_salary",
+        "net_salary",
+      ].includes(id)
     ) {
-      return setFormData((prev) => {
-        return { ...prev, [e.target.id]: putComma(e.target.value) };
-      });
+      setFormData((prev) => ({ ...prev, [id]: putComma(value) }));
+    } else {
+      setFormData((prev) => ({ ...prev, [id]: value }));
     }
 
-    setFormData((prev) => {
-      return { ...prev, [e.target.id]: e.target.value };
-    });
+    if (id === "department") {
+      setFormData((prev) => ({ ...prev, designation: "" }));
+    }
   };
 
   const handleFileChange = (event) => {
     const newFiles = Array.from(event.target.files);
-    setfile((prevFiles) => [...prevFiles, ...newFiles]);
+    console.log("Selected files:", newFiles.map((f) => f.name));
+    setFile((prevFiles) => {
+      const existingNames = new Set(prevFiles.map((f) => f.name));
+      const uniqueNewFiles = newFiles.filter((f) => !existingNames.has(f.name));
+      return [...prevFiles, ...uniqueNewFiles];
+    });
+    event.target.value = null;
   };
 
   const removeFile = (index) => {
-    setfile((prevFiles) => prevFiles.filter((_, i) => i !== index));
+    setFile((prevFiles) => prevFiles.filter((_, i) => i !== index));
   };
 
-  function handleSubmit() {
-    //befor enpty it to be uploadet to backend link
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setFormData({
-      basics: "",
-      hra: "",
-      employee_code: "",
-      first_name: "",
-      last_name: "",
-      department: "",
-      designation: "",
-      gender: "",
-      joining_date: "",
-      personal_number: "",
-      emergency_contact_number: "",
-      email: "",
-      aadhar_number: "",
-      pan_number: "",
-      status: "",
-      current_address: "",
-      highest_qualification: "",
-      previous_employer: "",
-      total_experience_year: "",
-      total_experience_month: "",
-      relevant_experience_year: "",
-      relevant_experience_month: "",
-      marital_status: "",
-      conveyance_allowance: "",
-      medical_allowance: "",
-      other_allowances: "",
-      bonus: "",
-      taxes: "",
-      pf: "",
-      esi: "",
-      gross_salary: "",
-      net_salary: "",
-      uan_number: "",
-      pf_number: "",
-      bank_name: "",
-      account_number: "",
-      ifsc_code: "",
-      asset: "",
-      asset_type: "",
-      laptop_company_name: "",
-      asset_id: "",
-      upload_documents: "",
-    });
-    setfile([]);
-  }
+    setError(null);
+
+    const persistedAuth = JSON.parse(localStorage.getItem("persist:root") || "{}");
+    const authState = JSON.parse(persistedAuth.auth || "{}");
+    const token = authState?.user?.token;
+
+    if (!token) {
+      setError("No token found. Please log in.");
+      return;
+    }
+
+    try {
+      const formDataToSend = new FormData();
+
+      Object.keys(formData).forEach((key) => {
+        if (formData[key] !== null && formData[key] !== undefined) {
+          const value = [
+            "basics",
+            "hra",
+            "conveyance_allowance",
+            "medical_allowance",
+            "other_allowances",
+            "bonus",
+            "taxes",
+            "pf",
+            "esi",
+            "gross_salary",
+            "net_salary",
+          ].includes(key)
+            ? cleanNumericValue(formData[key])
+            : formData[key];
+          formDataToSend.append(key, value);
+        }
+      });
+
+      const newFiles = file.filter((f) => f instanceof File);
+      console.log("Files being uploaded:", newFiles.map(f => f.name));
+      if (newFiles.length > 0) {
+        newFiles.forEach((f) => {
+          formDataToSend.append("upload_documents", f);
+        });
+      }
+
+      for (let [key, value] of formDataToSend.entries()) {
+        console.log(`FormData entry: ${key}=${typeof value === "object" ? "[File]" : value}`);
+      }
+
+      const config = {
+        headers: {
+          Authorization: `Token ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      };
+
+      const response = candidateId
+        ? await axios.put(
+          `http://127.0.0.1:8000/api/onboarding/${candidateId}/`,
+          formDataToSend,
+          config
+        )
+        : await axios.post(
+          "http://127.0.0.1:8000/api/onboarding/",
+          formDataToSend,
+          config
+        );
+
+      toast.success(`Candidate ${candidateId ? "updated" : "added"} successfully!`);
+
+      setFormData({
+        employee_code: "",
+        first_name: "",
+        last_name: "",
+        department: "",
+        branch: "",
+        designation: "",
+        gender: "",
+        joining_date: "",
+        personal_number: "",
+        emergency_contact_number: "",
+        email: "",
+        aadhar_number: "",
+        pan_number: "",
+        status: "",
+        current_address: "",
+        highest_qualification: "",
+        previous_employer: "",
+        total_experience_year: "",
+        total_experience_month: "",
+        relevant_experience_year: "",
+        relevant_experience_month: "",
+        marital_status: "",
+        conveyance_allowance: "",
+        medical_allowance: "",
+        other_allowances: "",
+        bonus: "",
+        taxes: "",
+        pf: "",
+        esi: "",
+        gross_salary: "",
+        net_salary: "",
+        uan_number: "",
+        pf_number: "",
+        bank_name: "",
+        account_number: "",
+        ifsc_code: "",
+        asset: "",
+        asset_type: "",
+        laptop_company_name: "",
+        asset_id: "",
+      });
+      setFile([]);
+      navigate("/?tab=onboarding");
+    } catch (err) {
+      console.error("Submission error:", err);
+      const errorMessage =
+        err.response?.data?.error ||
+        err.response?.data?.message ||
+        JSON.stringify(err.response?.data, null, 2) ||
+        err.message ||
+        "Failed to save candidate";
+      setError(errorMessage);
+      console.error("Response data:", err.response?.data);
+      console.error("Response status:", err.response?.status);
+      console.error("Response headers:", err.response?.headers);
+    }
+  };
+
   return (
     <div className="Add-New-Candidate">
       <div className="addcandidate-head">
         {candidateId ? <h1>Edit Candidate</h1> : <h1>Add Candidate</h1>}
         <nav>
           <svg
-            onClick={() => BackToOnboarding(-1)}
+            onClick={() => navigate(-1)}
             className="x-mark-logo"
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 384 512"
@@ -160,6 +411,7 @@ export default function addNewCandidate() {
           </svg>
         </nav>
       </div>
+      {error && <div className="error-message"><pre>{error}</pre></div>}
       <form onSubmit={handleSubmit} className="add-candidate-form">
         <div className="general-container">
           <h2>General Details</h2>
@@ -174,6 +426,8 @@ export default function addNewCandidate() {
                   name="employee_code"
                   value={formData.employee_code}
                   onChange={handleFormChange}
+                  placeholder="Auto Generate"
+                  disabled
                 />
               </div>
               <div className="candidate-box">
@@ -200,20 +454,40 @@ export default function addNewCandidate() {
                 />
               </div>
               <div className="candidate-box">
+                <label htmlFor="branch">Branch</label>
+                <select
+                  id="branch"
+                  name="branch"
+                  className="candidate-input"
+                  onChange={handleFormChange}
+                  value={formData.branch}
+                  required
+                >
+                  <option value="">Select a branch</option>
+                  {branchList.map((branch) => (
+                    <option key={branch.id} value={branch.id}>
+                      {branch.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="candidate-box">
                 <label htmlFor="department">Department</label>
                 <select
                   id="department"
                   name="department"
-                  value={formData.department}
-                  onChange={handleFormChange}
                   className="candidate-input"
+                  value={formData.department || ""}
+                  onChange={handleFormChange}
+                  required
                 >
-                  <option value="">Select Department</option>
-                  <option value="Sales">Sales</option>
-                  <option value="Engineering">Engineering</option>
-                  <option value="Admin">Admin</option>
-                  <option value="Technicians">Technicians</option>
-                  <option value="HR">HR</option>
+                  <option value="">Select a department</option>
+                  {Array.isArray(departmentList) &&
+                    departmentList.map((department) => (
+                      <option key={department.id} value={department.id}>
+                        {department.department_name}
+                      </option>
+                    ))}
                 </select>
               </div>
               <div className="candidate-box">
@@ -224,11 +498,14 @@ export default function addNewCandidate() {
                   value={formData.designation}
                   onChange={handleFormChange}
                   className="candidate-input"
+                  required
                 >
                   <option value="">Select Designation</option>
-                  <option value="Manager">Manager</option>
-                  <option value="Senior Executive">Senior Executive</option>
-                  <option value="Executive">Executive</option>
+                  {filteredRoles.map((role) => (
+                    <option key={role.id} value={role.id}>
+                      {role.role}
+                    </option>
+                  ))}
                 </select>
               </div>
               <div className="candidate-box">
@@ -253,14 +530,14 @@ export default function addNewCandidate() {
                   id="joining_date"
                   className="candidate-input"
                   name="joining_date"
+                  value={formData.joining_date}
                   onChange={handleFormChange}
                 />
               </div>
             </div>
-
             <div className="general-right">
               <div className="candidate-box">
-                <label htmlFor="personal_number">Personal Number </label>
+                <label htmlFor="personal_number">Personal Number</label>
                 <input
                   type="number"
                   id="personal_number"
@@ -272,9 +549,7 @@ export default function addNewCandidate() {
                 />
               </div>
               <div className="candidate-box">
-                <label htmlFor="emergency_contact_number">
-                  Emergency Contact Number
-                </label>
+                <label htmlFor="emergency_contact_number">Emergency Contact Number</label>
                 <input
                   type="number"
                   id="emergency_contact_number"
@@ -291,7 +566,7 @@ export default function addNewCandidate() {
                   id="email"
                   value={formData.email}
                   onChange={handleFormChange}
-                  name="PersonalEmail"
+                  name="email"
                   className="candidate-input"
                 />
               </div>
@@ -336,7 +611,6 @@ export default function addNewCandidate() {
                 <label htmlFor="current_address">Current Address</label>
                 <textarea
                   name="current_address"
-                  type="text"
                   id="current_address"
                   className="candidate-input"
                   onChange={handleFormChange}
@@ -348,13 +622,11 @@ export default function addNewCandidate() {
           </nav>
         </div>
         <div className="general-container">
-          <h2>EDUCATION & EXPERIENCE</h2>
+          <h2>Education & Experience</h2>
           <nav className="general">
             <div className="general-left">
               <div className="candidate-box">
-                <label htmlFor="highest_qualification">
-                  Highest Qualification{" "}
-                </label>
+                <label htmlFor="highest_qualification">Highest Qualification</label>
                 <input
                   type="text"
                   id="highest_qualification"
@@ -392,7 +664,6 @@ export default function addNewCandidate() {
                       </option>
                     ))}
                   </select>
-
                   <select
                     id="total_experience_month"
                     name="total_experience_month"
@@ -410,12 +681,9 @@ export default function addNewCandidate() {
                 </div>
               </div>
             </div>
-
             <div className="general-right">
               <div className="candidate-box">
-                <label htmlFor="relevant_experience_year">
-                  Relevant Experience{" "}
-                </label>
+                <label htmlFor="relevant_experience_year">Relevant Experience</label>
                 <div className="experience-dropdowns">
                   <select
                     id="relevant_experience_year"
@@ -431,7 +699,6 @@ export default function addNewCandidate() {
                       </option>
                     ))}
                   </select>
-
                   <select
                     id="relevant_experience_month"
                     name="relevant_experience_month"
@@ -448,7 +715,6 @@ export default function addNewCandidate() {
                   </select>
                 </div>
               </div>
-
               <div className="candidate-box">
                 <label htmlFor="marital_status">Marital Status</label>
                 <select
@@ -467,7 +733,7 @@ export default function addNewCandidate() {
           </nav>
         </div>
         <div className="general-container">
-          <h2>SALARY DETAILS</h2>
+          <h2>Salary Details</h2>
           <nav className="general">
             <div className="general-left">
               <div className="candidate-box">
@@ -515,9 +781,7 @@ export default function addNewCandidate() {
                 </div>
               </div>
               <div className="candidate-box">
-                <label htmlFor="conveyance_allowance">
-                  Conveyance Allowance
-                </label>
+                <label htmlFor="conveyance_allowance">Conveyance Allowance</label>
                 <div className="salary-container">
                   <input
                     type="text"
@@ -649,7 +913,6 @@ export default function addNewCandidate() {
                 </div>
               </div>
             </div>
-
             <div className="general-right">
               <div className="candidate-box">
                 <label htmlFor="esi">ESI</label>
@@ -718,7 +981,7 @@ export default function addNewCandidate() {
                 </div>
               </div>
               <div className="candidate-box">
-                <label htmlFor="uan_number">UAN Number </label>
+                <label htmlFor="uan_number">UAN Number</label>
                 <input
                   type="number"
                   id="uan_number"
@@ -729,7 +992,7 @@ export default function addNewCandidate() {
                 />
               </div>
               <div className="candidate-box">
-                <label htmlFor="pf_number">PF Number </label>
+                <label htmlFor="pf_number">PF Number</label>
                 <input
                   type="number"
                   id="pf_number"
@@ -776,7 +1039,7 @@ export default function addNewCandidate() {
           </nav>
         </div>
         <div className="general-container">
-          <h2>Other Detailes</h2>
+          <h2>Other Details</h2>
           <nav className="general">
             <div className="general-left">
               <div className="candidate-box">
@@ -819,11 +1082,10 @@ export default function addNewCandidate() {
                   <option value="">Laptop Name</option>
                   <option value="Dell">Dell</option>
                   <option value="HP">HP</option>
-                  <option value="Lenove">Lenovo</option>
+                  <option value="Lenovo">Lenovo</option>
                 </select>
               </div>
             </div>
-
             <div className="general-right">
               <div className="candidate-box">
                 <label htmlFor="asset_id">Asset Id</label>
@@ -845,6 +1107,7 @@ export default function addNewCandidate() {
                   name="upload_documents"
                   onChange={handleFileChange}
                   multiple
+                  accept=".pdf,.doc,.docx,.jpg,.png"
                 />
               </div>
               {file.length > 0 && (
